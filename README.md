@@ -1,2 +1,2 @@
 # JavaStreamsPerformanceAnalysis
-Performance difference analysis for parallel vs. sequential Java streams
+Performance comparison between Parallel and Sequential Java streams in different use cases.
