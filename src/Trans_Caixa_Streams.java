@@ -4,89 +4,17 @@
  */
 
 import java.time.LocalDateTime;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.temporal.ChronoField;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAccessor;
-import java.time.temporal.TemporalQuery;
-import java.time.temporal.TemporalQueries;
-import static java.time.temporal.TemporalQueries.chronology;
-import static java.time.temporal.TemporalQueries.localDate;
-import static java.time.temporal.TemporalQueries.localTime;
-import static java.time.temporal.TemporalQueries.offset;
-import static java.time.temporal.TemporalQueries.precision;
-import static java.time.temporal.TemporalQueries.zone; 
-import static java.time.temporal.TemporalQueries.zoneId; 
-import static java.time.temporal.ChronoUnit.NANOS;
-import static java.time.DayOfWeek.SUNDAY;
-import static java.time.DayOfWeek.MONDAY;
-import static java.time.DayOfWeek.TUESDAY;
-import static java.time.DayOfWeek.WEDNESDAY;
-import static java.time.DayOfWeek.THURSDAY;
-import static java.time.DayOfWeek.FRIDAY;
-import static java.time.DayOfWeek.SATURDAY;
-import java.time.*;
 import static java.lang.System.out;
-import java.util.Random;
 import java.util.stream.*;
-import java.util.stream.IntStream;
-import java.util.Collections;
-import java.util.Collection;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.groupingByConcurrent;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.averagingDouble;
-import static java.util.stream.Collectors.summingDouble;
-import static java.util.stream.Collectors.summingInt;
-import static java.util.stream.Collectors.summingLong;
-import static java.util.stream.Collectors.summarizingDouble;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.partitioningBy;
-import static java.util.stream.Collectors.maxBy;
-import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.counting;
-import static java.util.Comparator.comparing;
 import java.util.*;
-import java.util.DoubleSummaryStatistics;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.InputMismatchException;
 import java.lang.NumberFormatException;
-import java.lang.System.*;
-import static java.lang.System.out;
 import java.nio.charset.StandardCharsets;
-import static java.time.DayOfWeek.FRIDAY;
-import static java.time.DayOfWeek.SATURDAY;
-import static java.time.DayOfWeek.SUNDAY;
-import static java.time.DayOfWeek.WEDNESDAY;
-import static java.time.temporal.ChronoField.ALIGNED_WEEK_OF_YEAR;
-import static java.time.temporal.ChronoField.DAY_OF_WEEK;
-import static java.time.temporal.ChronoUnit.DAYS;
-import static java.time.temporal.TemporalAdjusters.nextOrSame;
-import static java.time.temporal.TemporalAdjusters.next;
-import static java.time.temporal.TemporalAdjusters.firstInMonth;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Map.Entry;
-import java.util.function.*;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.summingDouble;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
-import java.util.concurrent.Callable;
-import java.lang.Runnable;
-import static java.util.concurrent.ForkJoinPool.commonPool;
-import java.lang.Thread;
-import java.util.Random;
 
 
 public class Trans_Caixa_Streams {
@@ -150,37 +78,12 @@ public class Trans_Caixa_Streams {
       return lTrans;
     }
     
-    public static <R> SimpleEntry<Double,R> testeBoxGen(Supplier<? extends R> supplier) {
-        Crono.start();
-        R resultado = supplier.get();
-        Double tempo = Crono.stop();
-        return new SimpleEntry<Double,R>(tempo, resultado);
-    }
-    
-    
     public static void main(String[] args) throws InterruptedException, ExecutionException {
-        
+        String path_prefix = "";
         String nomeFich = "transCaixa1M.txt";
-        List<TransCaixa> ltc1 = new ArrayList<>();
-        
-        // LE O FICHEIRO DE TRANSACÇOES PARA List<TransCaixa> sem Streams 
-        Crono.start();
-        ltc1 = setup1(nomeFich);
-        out.println("Setup com List<String>: " + Crono.stop()*1000 + " ms");
-        out.println("Transacções lidas -  Listas: " + ltc1.size());
-        ltc1.clear();
-       
-        // LE O FICHEIRO DE TRANSACÇOES PARA List<TransCaixa> com Streams
-        Crono.start();
-        ltc1 = setup(nomeFich);
-        out.println("Setup com Streams: " + Crono.stop()*1000 + " ms");
-        out.println("Transacções lidas - Streams: " + ltc1.size());
-        //memoryUsage();
-        
-        final List<TransCaixa> ltc = new ArrayList<>(ltc1);
-        
-        DoubleSummaryStatistics stats = 
-                                        ltc.stream().mapToDouble(TransCaixa::getValor).summaryStatistics();
-        out.println("Stats: " + stats);
+        List<TransCaixa> transaction_list = new ArrayList<>();
+        transaction_list = setup(nomeFich);
+
+        Benchmarks.T1(transaction_list);
      }
 }
