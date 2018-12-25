@@ -1,8 +1,13 @@
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Comparator;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.stream.Collectors;;
 
 public class Benchmarks{
     public static void T1(List<TransCaixa> transactions){
@@ -73,6 +78,57 @@ public class Benchmarks{
         bench_results = testeBoxGen(stream_parallel_supplier);
         System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
     }
+
+
+    public static void T2(List<TransCaixa> transactions){
+        SimpleEntry<Double,Collection<TransCaixa>> bench_results;
+        Comparator<TransCaixa> byDate = 
+            (TransCaixa tc1, TransCaixa tc2) -> {
+                LocalDateTime t1 = tc1.getData();
+                LocalDateTime t2 = tc2.getData();
+                if(t1.isBefore(t2))
+                    return -1;
+                else if(t1.equals(t2))
+                    return 0;
+                else return 1;  
+            };
+        
+        Supplier<Set<TransCaixa>> sort_treeset = 
+            () -> {
+                TreeSet<TransCaixa> treesorted = new TreeSet<>(byDate);
+                treesorted.addAll(transactions);
+                return treesorted;   
+            };
+
+        Supplier<List<TransCaixa>> sort_inplace = 
+            () -> {
+                List<TransCaixa> sorted = new ArrayList<>();
+                sorted.addAll(transactions);
+                sorted.sort(byDate);
+                return sorted;
+            };
+
+        Supplier<List<TransCaixa>> sort_seq_stream = 
+            () -> {
+                return transactions.stream().sorted(byDate).collect(Collectors.toList());
+            };
+
+        Supplier<List<TransCaixa>> sort_parallel_stream = 
+            () -> {
+                return transactions.parallelStream().sorted(byDate).collect(Collectors.toList());
+            };
+
+        bench_results = testeBoxGen(sort_treeset);
+        System.out.println("Sorted in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(sort_inplace);
+        System.out.println("Sorted in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(sort_seq_stream);
+        System.out.println("Sorted in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(sort_parallel_stream);
+        System.out.println("Sorted in " + bench_results.getKey() + "s");
+    }
+
+
     public static <R> SimpleEntry<Double,R> testeBoxGen(Supplier<? extends R> supplier) {
         for(int i = 0; i < 10; i ++) supplier.get();    //warmup caches
         System.gc();                                    //request garbage collector
