@@ -88,5 +88,6 @@ public class Trans_Caixa_Streams {
         Benchmarks.T1(transaction_list);
         Benchmarks.T2(transaction_list);
         Benchmarks.T3();
+        Benchmarks.T4(transaction_list);
      }
 }

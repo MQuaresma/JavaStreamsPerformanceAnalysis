@@ -12,8 +12,14 @@ import java.util.function.IntSupplier;
 import java.util.Random;
 import java.util.Arrays;
 import java.util.stream.IntStream;
+import java.util.function.BiFunction;
 
 public class Benchmarks{
+
+//-------------------------------------------------------------------------------------------//
+//                                           T1                                              //
+//-------------------------------------------------------------------------------------------//
+
     public static void T1(List<TransCaixa> transactions){
         SimpleEntry<Double,Double> bench_results;
         double[] transactions_array = transactions
@@ -83,6 +89,9 @@ public class Benchmarks{
         System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
     }
 
+//-------------------------------------------------------------------------------------------//
+//                                           T2                                              //
+//-------------------------------------------------------------------------------------------//
 
     public static void T2(List<TransCaixa> transactions){
         SimpleEntry<Double,Collection<TransCaixa>> bench_results;
@@ -132,6 +141,10 @@ public class Benchmarks{
         System.out.println("Sorted in " + bench_results.getKey() + "s");
     }
 
+//-------------------------------------------------------------------------------------------//
+//                                           T3                                              //
+//-------------------------------------------------------------------------------------------//
+
     public static void T3(){
         SimpleEntry<Double,List<Integer>> bench_results_list;
         SimpleEntry<Double,int[]> bench_results_array;
@@ -163,6 +176,15 @@ public class Benchmarks{
                              .distinct()
                              .toArray();
             };
+        
+        Supplier<int[]> rd_array_parallel =
+            () -> {
+                return Arrays.stream(random_ints_array)
+                             .parallel()
+                             .distinct()
+                             .toArray();
+            };
+        
 
         Supplier<IntStream> rd_intstream_stream =
             () -> {
@@ -181,11 +203,108 @@ public class Benchmarks{
         System.out.println("Removed duplicated data in " + bench_results_list.getKey() + "s");
         bench_results_array = testeBoxGen(rd_array_stream);
         System.out.println("Removed duplicated data in " + bench_results_array.getKey() + "s");
+        bench_results_array = testeBoxGen(rd_array_parallel);
+        System.out.println("Removed duplicated data in " + bench_results_array.getKey() + "s");
         bench_results_stream = testeBoxGen(rd_intstream_stream);
         System.out.println("Removed duplicated data in " + bench_results_stream.getKey() + "s");
         bench_results_stream = testeBoxGen(rd_intstream_parallel);
         System.out.println("Removed duplicated data in " + bench_results_stream.getKey() + "s");
     }
+
+//-------------------------------------------------------------------------------------------//
+//                                           T4                                              //
+//-------------------------------------------------------------------------------------------//
+
+    private static double method_multiplication (double number_1, double number_2){
+        return number_1 * number_2;
+    }
+
+    interface LambdaFunc{ 
+        double operation(double a, double b); 
+    }
+
+    private double operate(double a, double b, LambdaFunc fobj){ 
+        return fobj.operation(a, b); 
+    } 
+
+    public static void T4(List<TransCaixa> transactions){
+        SimpleEntry<Double, double[]> bench_results;
+        
+        BiFunction<Double, Double, Double> bi_multiplication = (x, y) -> {      
+            return x * y;
+        };
+
+        LambdaFunc lambda_multiplication = (double x, double y) -> x * y;
+
+        double[] transactions_array = transactions
+                                            .stream()
+                                            .mapToDouble(TransCaixa::getValor)
+                                            .toArray();
+
+        Benchmarks b = new Benchmarks();
+
+        Supplier<double[]> mult_method_stream =
+        () -> {
+            return Arrays.stream(transactions_array)
+                         .map(t -> method_multiplication(t,t))
+                         .toArray();
+        };
+
+        Supplier<double[]> mult_method_parallel =
+        () -> {
+            return Arrays.stream(transactions_array)
+                         .parallel()
+                         .map(t -> method_multiplication(t,t))
+                         .toArray();
+        };
+
+        Supplier<double[]> mult_bi_stream =
+        () -> {
+            return Arrays.stream(transactions_array)
+                         .map(t -> bi_multiplication.apply(t,t))
+                         .toArray();
+        };
+
+        Supplier<double[]> mult_bi_parallel =
+        () -> {
+            return Arrays.stream(transactions_array)
+                         .parallel()
+                         .map(t -> bi_multiplication.apply(t,t))
+                         .toArray();
+        };
+
+        Supplier<double[]> mult_lambda_stream =
+        () -> {
+            return Arrays.stream(transactions_array)
+                         .map(t -> b.operate(t,t,lambda_multiplication))
+                         .toArray();
+        };
+
+        Supplier<double[]> mult_lambda_parallel =
+        () -> {
+            return Arrays.stream(transactions_array)
+                         .parallel()
+                         .map(t -> b.operate(t,t,lambda_multiplication))
+                         .toArray();
+        };
+
+        bench_results = testeBoxGen(mult_method_stream);
+        System.out.println("Calculated in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(mult_method_parallel);
+        System.out.println("Calculated in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(mult_bi_stream);
+        System.out.println("Calculated in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(mult_bi_stream);
+        System.out.println("Calculated in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(mult_lambda_stream);
+        System.out.println("Calculated in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(mult_lambda_parallel);
+        System.out.println("Calculated in " + bench_results.getKey() + "s");
+    }
+
+//-------------------------------------------------------------------------------------------//
+//                                     TESTEBOXGEN                                           //
+//-------------------------------------------------------------------------------------------//
 
     public static <R> SimpleEntry<Double,R> testeBoxGen(Supplier<? extends R> supplier) {
         for(int i = 0; i < 10; i ++) supplier.get();    //warmup caches
