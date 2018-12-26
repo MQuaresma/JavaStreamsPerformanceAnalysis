@@ -137,9 +137,9 @@ public class Benchmarks{
         SimpleEntry<Double,int[]> bench_results_array;
         SimpleEntry<Double,IntStream> bench_results_stream;
         Random int_generator = new Random();
-        IntStream random_ints_stream = int_generator.ints(1000000, 1, 9999);
-        int[] random_ints_array = random_ints_stream.toArray();
-        List<Integer> random_ints_list = random_ints_stream.boxed().collect(Collectors.toList());
+
+        int[] random_ints_array = int_generator.ints(1000000, 1, 9999).toArray();
+        List<Integer> random_ints_list = Arrays.stream(random_ints_array).boxed().collect(Collectors.toList());;
         
         Supplier<List<Integer>> rd_list_stream = 
             () -> {
@@ -166,12 +166,12 @@ public class Benchmarks{
 
         Supplier<IntStream> rd_intstream_stream =
             () -> {
-                return random_ints_stream.distinct();
+                return Arrays.stream(random_ints_array).distinct();
             };
          
         Supplier<IntStream> rd_intstream_parallel =
             () -> {
-                return random_ints_stream.parallel().distinct();
+                return Arrays.stream(random_ints_array).parallel().distinct();
             };
         
 
