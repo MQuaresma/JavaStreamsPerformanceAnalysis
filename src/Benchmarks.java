@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Set;
+import java.util.Spliterator;
 import java.util.TreeSet;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -365,6 +366,55 @@ public static void T5(List<TransCaixa> transactions){
     System.out.println("Sorted in " + bench_results_list.getKey() + "s");
 }
     
+//-------------------------------------------------------------------------------------------//
+//                                           T7                                              //
+//-------------------------------------------------------------------------------------------//
+
+public static void T7(List<TransCaixa> transactions){
+    SimpleEntry<Double, Double> bench_results;
+
+    Spliterator<TransCaixa> spliterator1 = (new ArrayList<>(transactions)).spliterator();
+    Spliterator<TransCaixa> spliterator2 = spliterator1.trySplit();
+    Spliterator<TransCaixa> spliterator3 = spliterator2.trySplit();
+    Spliterator<TransCaixa> spliterator4 = spliterator1.trySplit();
+
+    Supplier<Double> list_sum_list = 
+        () -> {
+            double sum = 0.f;
+            for (TransCaixa t : transactions)
+                sum += t.getValor();
+            return sum;
+        };
+    
+    Supplier<Double> list_sum_stream = 
+        () -> {
+            return transactions.stream()
+                               .mapToDouble(TransCaixa::getValor)
+                               .sum();
+        };
+    
+    Supplier<Double> list_sum_parallel = 
+        () -> {
+            return transactions.parallelStream()
+                               .mapToDouble(TransCaixa::getValor)
+                               .sum();
+        };
+
+    /*Supplier<Double> spliterator_sum_foreach =
+        () -> {
+            double sum = 0;
+            spliterator1.forEachRemaining(t -> sum += t.getValor());
+            return sum;
+        };*/
+
+    bench_results = testeBoxGen(list_sum_list);
+    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    bench_results = testeBoxGen(list_sum_stream);
+    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    bench_results = testeBoxGen(list_sum_parallel);
+    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    
+}
 
 //-------------------------------------------------------------------------------------------//
 //                                     TESTE_BOX_GEN                                         //
