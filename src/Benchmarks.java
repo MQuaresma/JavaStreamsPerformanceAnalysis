@@ -303,7 +303,71 @@ public class Benchmarks{
     }
 
 //-------------------------------------------------------------------------------------------//
-//                                     TESTEBOXGEN                                           //
+//                                           T5                                              //
+//-------------------------------------------------------------------------------------------//
+
+public static void T5(List<TransCaixa> transactions){
+    SimpleEntry<Double, TreeSet<TransCaixa>> bench_results_tree;
+    SimpleEntry<Double, List<TransCaixa>> bench_results_list;
+
+    Comparator<TransCaixa> byValor = 
+        (TransCaixa tc1, TransCaixa tc2) -> {
+            double t1 = tc1.getValor();
+            double t2 = tc2.getValor();
+            if(t1 > t2)
+                return 1;
+            else if(t1 == t2)
+                return 0;
+            else return -1;  
+        };
+
+    Supplier<TreeSet<TransCaixa>> sort_treeset_stream = 
+        () -> {
+            TreeSet<TransCaixa> treesorted = new TreeSet<>(byValor);
+            transactions.stream()
+                        .map(t -> treesorted.add(t));
+            return treesorted;   
+        };
+
+    Supplier<TreeSet<TransCaixa>> sort_treeset_parallel = 
+        () -> {
+            TreeSet<TransCaixa> treesorted = new TreeSet<>(byValor);
+            transactions.parallelStream()
+                        .map(t -> treesorted.add(t));
+            return treesorted;   
+        };
+
+    Supplier<List<TransCaixa>> sort_seq_stream = 
+        () -> {
+            List<TransCaixa> listsorted = new ArrayList<>();
+            transactions.stream()
+                        .sorted(byValor)
+                        .map(t -> listsorted.add(t));
+            return listsorted;
+        };
+
+    Supplier<List<TransCaixa>> sort_seq_parallel = 
+        () -> {
+            List<TransCaixa> listsorted = new ArrayList<>();
+            transactions.parallelStream()
+                        .sorted(byValor)
+                        .map(t -> listsorted.add(t));
+            return listsorted;
+        };
+
+    bench_results_tree = testeBoxGen(sort_treeset_stream);
+    System.out.println("Sorted in " + bench_results_tree.getKey() + "s");
+    bench_results_tree = testeBoxGen(sort_treeset_parallel);
+    System.out.println("Sorted in " + bench_results_tree.getKey() + "s");
+    bench_results_list = testeBoxGen(sort_seq_stream);
+    System.out.println("Sorted in " + bench_results_list.getKey() + "s");
+    bench_results_list = testeBoxGen(sort_seq_parallel);
+    System.out.println("Sorted in " + bench_results_list.getKey() + "s");
+}
+    
+
+//-------------------------------------------------------------------------------------------//
+//                                     TESTE_BOX_GEN                                         //
 //-------------------------------------------------------------------------------------------//
 
     public static <R> SimpleEntry<Double,R> testeBoxGen(Supplier<? extends R> supplier) {
