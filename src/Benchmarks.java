@@ -133,13 +133,47 @@ public class Benchmarks{
     }
 
     public static void T3(){
+        SimpleEntry<Double,List<Integer>> bench_results_list;
+        SimpleEntry<Double,int[]> bench_results_array;
         Random int_generator = new Random();
         int[] random_ints_array = int_generator.ints(1000000, 1, 9999).toArray();
         IntStream random_ints_stream = Arrays.stream(random_ints_array);
         List<Integer> random_ints_list = Arrays.stream(random_ints_array).boxed().collect(Collectors.toList());
         
-    }
+        Supplier<List<Integer>> rd_list_stream = 
+            () -> {
+                return random_ints_list
+                                    .stream()
+                                    .distinct()
+                                    .collect(Collectors.toList());
+            };
+        
+        Supplier<List<Integer>> rd_list_parallel = 
+            () -> {
+                return random_ints_list
+                                    .parallelStream()
+                                    .distinct()
+                                    .collect(Collectors.toList());
+            };
 
+        Supplier<int[]> rd_array_stream =
+            () -> {
+                return Arrays.stream(random_ints_array)
+                             .distinct()
+                             .toArray();
+
+
+            };
+
+        bench_results_list = testeBoxGen(rd_list_stream);
+        System.out.println("Removed duplicated data in " + bench_results_list.getKey() + "s");
+        bench_results_list = testeBoxGen(rd_list_parallel);
+        System.out.println("Removed duplicated data in " + bench_results_list.getKey() + "s");
+        bench_results_array = testeBoxGen(rd_array_stream);
+        System.out.println("Removed duplicated data in " + bench_results_array.getKey() + "s");
+
+        
+    }
 
     public static <R> SimpleEntry<Double,R> testeBoxGen(Supplier<? extends R> supplier) {
         for(int i = 0; i < 10; i ++) supplier.get();    //warmup caches
