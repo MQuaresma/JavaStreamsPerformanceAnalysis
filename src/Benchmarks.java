@@ -423,16 +423,14 @@ public static void T7(List<TransCaixa> transactions){
 //                                           T8                                              //
 //-------------------------------------------------------------------------------------------//
 
-
-// 13 - 04 - 2017
-
 public static void T8(List<TransCaixa> transactions){
     SimpleEntry<Double, String> bench_results;
 
+    LocalDateTime ld1 = LocalDateTime.of(2017, 02, 20, 16, 0);
+    LocalDateTime ld2 = LocalDateTime.of(2017, 02, 20, 22, 0);
+
     Supplier<String> java_7_biggest_tcode = 
     () -> {
-        LocalDateTime ld1 = LocalDateTime.of(2017, 02, 20, 16, 0);
-        LocalDateTime ld2 = LocalDateTime.of(2017, 02, 20, 22, 0);
         String r = "";
         double v = Double.MIN_NORMAL;
         LocalDateTime ldt;
@@ -460,8 +458,6 @@ public static void T8(List<TransCaixa> transactions){
 
     Supplier<String> java_8_biggest_tcode = 
     () -> {
-        LocalDateTime ld1 = LocalDateTime.of(2017, 02, 20, 16, 0);
-        LocalDateTime ld2 = LocalDateTime.of(2017, 02, 20, 22, 0);
         double v = 0; String r = "";
         Optional<TransCaixa> tr = transactions.stream()  
                     .filter(t -> t.getData().isAfter(ld1) && t.getData().isBefore(ld2))
@@ -471,8 +467,6 @@ public static void T8(List<TransCaixa> transactions){
 
     Supplier<String> java_8_biggest_tcode_parallel = 
     () -> {
-        LocalDateTime ld1 = LocalDateTime.of(2017, 02, 20, 16, 0);
-        LocalDateTime ld2 = LocalDateTime.of(2017, 02, 20, 22, 0);
         double v = 0; String r = "";
         Optional<TransCaixa> tr = transactions.parallelStream()  
                     .filter(t -> t.getData().isAfter(ld1) && t.getData().isBefore(ld2))
@@ -489,6 +483,56 @@ public static void T8(List<TransCaixa> transactions){
 
 }
 
+//-------------------------------------------------------------------------------------------//
+//                                           T10                                              //
+//-------------------------------------------------------------------------------------------//
+
+public static double get_iva(double valor){
+    if (valor < 20) return 12;
+    else if (valor < 29) return 20;
+    else return 23;
+}
+
+public static void T10(List<TransCaixa> transactions){
+
+    SimpleEntry<Double, Double> bench_results;
+
+    Supplier<Double> java_7_iva = 
+    () -> {
+          double valor_iva = 0.f;
+          double valor;
+          double iva;
+          for (TransCaixa t : transactions){
+            valor = t.getValor();
+            valor_iva += valor * get_iva(valor); 
+          }
+          return valor_iva;
+    };
+
+    Supplier<Double> java_8_iva = 
+    () -> {
+          return transactions.stream()
+                             .mapToDouble(t -> t.getValor())
+                             .map(v -> v * get_iva(v))
+                             .sum();
+    };
+
+    Supplier<Double> java_8_iva_parallel = 
+    () -> {
+          return transactions.parallelStream()
+                             .mapToDouble(t -> t.getValor())
+                             .map(v -> v * get_iva(v))
+                             .sum();
+    };
+
+    bench_results = testeBoxGen(java_7_iva);
+    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    bench_results = testeBoxGen(java_8_iva);
+    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    bench_results = testeBoxGen(java_8_iva_parallel);
+    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+
+}
 
 //-------------------------------------------------------------------------------------------//
 //                                     TESTE_BOX_GEN                                         //
