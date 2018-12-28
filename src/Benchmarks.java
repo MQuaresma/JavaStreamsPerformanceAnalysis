@@ -3,6 +3,7 @@ import java.util.function.Supplier;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Comparator;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.Set;
 import java.util.Spliterator;
@@ -14,6 +15,8 @@ import java.util.Random;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 import java.util.function.BiFunction;
+import java.time.*;
+import java.util.*;
 
 public class Benchmarks{
 
@@ -415,6 +418,77 @@ public static void T7(List<TransCaixa> transactions){
     System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
     
 }
+
+//-------------------------------------------------------------------------------------------//
+//                                           T8                                              //
+//-------------------------------------------------------------------------------------------//
+
+
+// 13 - 04 - 2017
+
+public static void T8(List<TransCaixa> transactions){
+    SimpleEntry<Double, String> bench_results;
+
+    Supplier<String> java_7_biggest_tcode = 
+    () -> {
+        LocalDateTime ld1 = LocalDateTime.of(2017, 02, 20, 16, 0);
+        LocalDateTime ld2 = LocalDateTime.of(2017, 02, 20, 22, 0);
+        String r = "";
+        double v = Double.MIN_NORMAL;
+        LocalDateTime ldt;
+        LocalTime lt;
+        for (TransCaixa t : transactions){
+            ldt = t.getData();
+            lt = ldt.toLocalTime();
+            if (t.getData().isAfter(ld1) && t.getData().isBefore(ld2)){
+                if (t.getValor() > v){ r = t.getTrans(); v = t.getValor(); }
+            }
+        }
+        return r;    
+    };
+
+    Comparator<TransCaixa> byValor = 
+        (TransCaixa tc1, TransCaixa tc2) -> {
+            double t1 = tc1.getValor();
+            double t2 = tc2.getValor();
+            if(t1 > t2)
+                return 1;
+            else if(t1 == t2)
+                return 0;
+            else return -1;  
+        };
+
+    Supplier<String> java_8_biggest_tcode = 
+    () -> {
+        LocalDateTime ld1 = LocalDateTime.of(2017, 02, 20, 16, 0);
+        LocalDateTime ld2 = LocalDateTime.of(2017, 02, 20, 22, 0);
+        double v = 0; String r = "";
+        Optional<TransCaixa> tr = transactions.stream()  
+                    .filter(t -> t.getData().isAfter(ld1) && t.getData().isBefore(ld2))
+                    .max(byValor);
+        return tr.get().getTrans();
+    };
+
+    Supplier<String> java_8_biggest_tcode_parallel = 
+    () -> {
+        LocalDateTime ld1 = LocalDateTime.of(2017, 02, 20, 16, 0);
+        LocalDateTime ld2 = LocalDateTime.of(2017, 02, 20, 22, 0);
+        double v = 0; String r = "";
+        Optional<TransCaixa> tr = transactions.parallelStream()  
+                    .filter(t -> t.getData().isAfter(ld1) && t.getData().isBefore(ld2))
+                    .max(byValor);
+        return tr.get().getTrans();
+    };
+
+    bench_results = testeBoxGen(java_7_biggest_tcode);
+    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    bench_results = testeBoxGen(java_8_biggest_tcode);
+    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    bench_results = testeBoxGen(java_8_biggest_tcode_parallel);
+    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+
+}
+
 
 //-------------------------------------------------------------------------------------------//
 //                                     TESTE_BOX_GEN                                         //

@@ -3,7 +3,7 @@
  * @author fmm 2017
  */
 
-import java.time.LocalDateTime;
+import java.time.*;
 import static java.lang.System.out;
 import java.util.stream.*;
 import static java.util.stream.Collectors.toList;
@@ -80,16 +80,17 @@ public class Trans_Caixa_Streams {
     
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         //REMOVE WHEN COMMITING
-        String path_prefix = "";
+        String path_prefix = "../../../Streams/input/";
         String nomeFich = path_prefix + "transCaixa1M.txt";
         List<TransCaixa> transaction_list = new ArrayList<>();
         transaction_list = setup(nomeFich);
 
-        Benchmarks.T1(transaction_list);
-        Benchmarks.T2(transaction_list);
-        Benchmarks.T3();
-        Benchmarks.T4(transaction_list);
-        Benchmarks.T5(transaction_list);
-        Benchmarks.T7(transaction_list);
+        //Benchmarks.T1(transaction_list);
+        //Benchmarks.T2(transaction_list);
+        //Benchmarks.T3();
+        //Benchmarks.T4(transaction_list);
+        //Benchmarks.T5(transaction_list);
+        //Benchmarks.T7(transaction_list);
+        Benchmarks.T8(transaction_list);
     }
 }
