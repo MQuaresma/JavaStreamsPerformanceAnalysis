@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Comparator;
@@ -17,6 +18,8 @@ import java.util.stream.IntStream;
 import java.util.function.BiFunction;
 import java.time.*;
 import java.util.*;
+
+import static java.util.stream.Collectors.*;
 
 public class Benchmarks{
 
@@ -533,6 +536,55 @@ public static void T10(List<TransCaixa> transactions){
     System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
 
 }
+//-------------------------------------------------------------------------------------------//
+//                                           T12                                              //
+//-------------------------------------------------------------------------------------------//
+public static void T12(List<TransCaixa> transactions) {
+    SimpleEntry<Double, Map<String,Map<Month,List<TransCaixa>>>> map_bench_results;
+    SimpleEntry<Double, ConcurrentMap<String,ConcurrentMap<Month,List<TransCaixa>>>> concmap_bench_results;
+    SimpleEntry<Double,Map<String,Double>> total_faturado_map;
+    SimpleEntry<Double,ConcurrentMap<String,Double>> total_faturado_conc;
+    Supplier<Map<String,Map<Month,List<TransCaixa>>>> map =
+            () -> {
+                return transactions.stream()
+                                   .collect(groupingBy(t->t.getCaixa(),
+                                                       groupingBy(t->t.getData().getMonth())));
+            };
+
+    Supplier<ConcurrentMap<String,ConcurrentMap<Month,List<TransCaixa>>>> concMap =
+            () -> {
+                return transactions.stream()
+                                   .collect(groupingByConcurrent(t->t.getCaixa(),
+                                                                 groupingByConcurrent(t->t.getData().getMonth())));
+            };
+
+    Supplier<Map<String,Double>> fat_map =
+            () -> {
+                return transactions.stream()
+                        .collect(groupingBy(t->t.getCaixa(),
+                                summingDouble(t->t.getValor())));
+            };
+
+    Supplier<ConcurrentMap<String,Double>> fat_conc_map =
+            () -> {
+                return transactions.stream()
+                        .collect(groupingByConcurrent(t->t.getCaixa(),
+                                summingDouble(t->t.getValor())));
+            };
+
+
+    map_bench_results = testeBoxGen(map);
+    System.out.println("Computed " + map_bench_results.getValue() + " in " + map_bench_results.getKey() + "s");
+    concmap_bench_results = testeBoxGen(concMap);
+    System.out.println("Computed " + concmap_bench_results.getValue() + " in " + concmap_bench_results.getKey() + "s");
+    total_faturado_map = testeBoxGen(fat_map);
+    System.out.println("Computed " + total_faturado_map.getValue() + " in " + total_faturado_map.getKey() + "s");
+    total_faturado_conc = testeBoxGen(fat_conc_map);
+    System.out.println("Computed " + total_faturado_conc.getValue() + " in " + total_faturado_conc.getKey() + "s");
+}
+
+
+
 
 //-------------------------------------------------------------------------------------------//
 //                                     TESTE_BOX_GEN                                         //
