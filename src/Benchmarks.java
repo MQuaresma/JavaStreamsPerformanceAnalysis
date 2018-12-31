@@ -1,3 +1,4 @@
+import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
@@ -584,7 +585,71 @@ public static void T12(List<TransCaixa> transactions) {
 }
 
 
+//-------------------------------------------------------------------------------------------//
+//                                           T9                                              //
+//-------------------------------------------------------------------------------------------//
+public static void T9(List<TransCaixa> transactions) {
+    SimpleEntry<Double,List<List<TransCaixa>>> listas_bench_results;
+    SimpleEntry<Double,List<Double>> faturado_bench_results;
 
+    Supplier<List<List<TransCaixa>>> java_8_listas =
+            () -> {
+                return transactions.stream()
+                                   .collect(groupingBy(t->t.getData().toLocalDate().get(ChronoField.ALIGNED_WEEK_OF_YEAR)))
+                                   .values()
+                                   .stream()
+                                   .collect(toList());
+            };
+
+    Supplier<List<List<TransCaixa>>> java_7_listas =
+            () -> {
+                List<List<TransCaixa>> listas = new ArrayList<>(100);
+                for (int i=0;i<54;i++) {
+                    listas.add(i,new ArrayList<>());
+                }
+                for (TransCaixa t:transactions) {
+                    int week = t.getData().toLocalDate().get(ChronoField.ALIGNED_WEEK_OF_YEAR);
+                    listas.get(week).add(t);
+                }
+                return listas;
+            };
+    Supplier<List<Double>> java_8_faturado =
+            () -> {
+                List<List<TransCaixa>> listas = java_8_listas.get();
+
+                return listas.stream()
+                             .map(listasemana-> listasemana.stream()
+                                                                   .mapToDouble(t->t.getValor())
+                                                                   .sum())
+                             .collect(toList());
+            };
+    Supplier<List<Double>> java_7_faturado =
+            () -> {
+                List<List<TransCaixa>> listas = java_7_listas.get();
+                List<Double> faturados = new ArrayList<>();
+                for (List<TransCaixa> semana:listas) {
+                    double r =0;
+                    if (semana.size()>0) {
+                        for (TransCaixa t : semana) {
+                            r += t.getValor();
+                        }
+
+                        faturados.add(r);
+                    }
+
+                }
+                return faturados;
+            };
+
+    listas_bench_results = testeBoxGen(java_8_listas);
+    System.out.println("Computed " + listas_bench_results.getValue() + " in " + listas_bench_results.getKey() + "s");
+    listas_bench_results = testeBoxGen(java_7_listas);
+    System.out.println("Computed " + listas_bench_results.getValue() + " in " + listas_bench_results.getKey() + "s");
+    faturado_bench_results = testeBoxGen(java_8_faturado);
+    System.out.println("Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
+    faturado_bench_results = testeBoxGen(java_7_faturado);
+    System.out.println("Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
+}
 
 //-------------------------------------------------------------------------------------------//
 //                                     TESTE_BOX_GEN                                         //
