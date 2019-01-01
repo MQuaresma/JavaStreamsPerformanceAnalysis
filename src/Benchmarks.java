@@ -26,6 +26,7 @@ public class Benchmarks{
 
 //-------------------------------------------------------------------------------------------//
 //                                           T1                                              //
+// Calculate sum of transaction values                                                       //
 //-------------------------------------------------------------------------------------------//
 
     public static void T1(List<TransCaixa> transactions){
@@ -99,6 +100,7 @@ public class Benchmarks{
 
 //-------------------------------------------------------------------------------------------//
 //                                           T2                                              //
+// Fetch portion of Collection based on sorting criteria (first/last 30%)                    //
 //-------------------------------------------------------------------------------------------//
 
     public static void T2(List<TransCaixa> transactions){
@@ -151,46 +153,41 @@ public class Benchmarks{
 
 //-------------------------------------------------------------------------------------------//
 //                                           T3                                              //
+//  Remove duplicates from Collection                                                        //
+//  length: no. of elements in Collection                                                    //
 //-------------------------------------------------------------------------------------------//
 
-    public static void T3(){
+    public static void T3(int length){
         SimpleEntry<Double,List<Integer>> bench_results_list;
         SimpleEntry<Double,int[]> bench_results_array;
         SimpleEntry<Double,IntStream> bench_results_stream;
         Random int_generator = new Random();
 
-        int[] random_ints_array = int_generator.ints(1000000, 1, 9999).toArray();
+        int[] random_ints_array = int_generator.ints(length, 1, 9999).toArray();
         List<Integer> random_ints_list = Arrays.stream(random_ints_array).boxed().collect(Collectors.toList());;
         
-        Supplier<List<Integer>> rd_list_stream = 
+        Supplier<List<Integer>> rd_list = 
             () -> {
-                return random_ints_list
-                                    .stream()
-                                    .distinct()
-                                    .collect(Collectors.toList());
-            };
-        
-        Supplier<List<Integer>> rd_list_parallel = 
-            () -> {
-                return random_ints_list
-                                    .parallelStream()
-                                    .distinct()
-                                    .collect(Collectors.toList());
+                List<Integer> result = new ArrayList<>();
+                random_ints_list.forEach(i -> {
+                    if(!result.contains(i)) result.add(i);
+                });
+                return result;
             };
 
-        Supplier<int[]> rd_array_stream =
+        Supplier<int[]> rd_array =
             () -> {
-                return Arrays.stream(random_ints_array)
-                             .distinct()
-                             .toArray();
-            };
-        
-        Supplier<int[]> rd_array_parallel =
-            () -> {
-                return Arrays.stream(random_ints_array)
-                             .parallel()
-                             .distinct()
-                             .toArray();
+                int[] result = new int[random_ints_array.length];
+                int non_dups=0;
+                boolean dup;
+
+                for(int elem : result){
+                    dup = false;
+                    for(int j = 0; !dup && j < non_dups; j++)
+                        dup = result[j] == elem;
+                    if(!dup) result[non_dups++]=elem;
+                }
+                return result;
             };
         
 
@@ -198,25 +195,13 @@ public class Benchmarks{
             () -> {
                 return Arrays.stream(random_ints_array).distinct();
             };
-         
-        Supplier<IntStream> rd_intstream_parallel =
-            () -> {
-                return Arrays.stream(random_ints_array).parallel().distinct();
-            };
-        
 
-        bench_results_list = testeBoxGen(rd_list_stream);
-        System.out.println("Removed duplicated data in " + bench_results_list.getKey() + "s");
-        bench_results_list = testeBoxGen(rd_list_parallel);
-        System.out.println("Removed duplicated data in " + bench_results_list.getKey() + "s");
-        bench_results_array = testeBoxGen(rd_array_stream);
-        System.out.println("Removed duplicated data in " + bench_results_array.getKey() + "s");
-        bench_results_array = testeBoxGen(rd_array_parallel);
-        System.out.println("Removed duplicated data in " + bench_results_array.getKey() + "s");
+        bench_results_list = testeBoxGen(rd_list);
+        System.out.println("[List] Removed duplicated data in " + bench_results_list.getKey() + "s");
+        bench_results_array = testeBoxGen(rd_array);
+        System.out.println("[Array] Removed duplicated data in " + bench_results_array.getKey() + "s");
         bench_results_stream = testeBoxGen(rd_intstream_stream);
-        System.out.println("Removed duplicated data in " + bench_results_stream.getKey() + "s");
-        bench_results_stream = testeBoxGen(rd_intstream_parallel);
-        System.out.println("Removed duplicated data in " + bench_results_stream.getKey() + "s");
+        System.out.println("[IntStream] Removed duplicated data in " + bench_results_stream.getKey() + "s");
     }
 
 //-------------------------------------------------------------------------------------------//
