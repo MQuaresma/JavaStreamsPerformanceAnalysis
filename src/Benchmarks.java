@@ -85,17 +85,17 @@ public class Benchmarks{
             };
         
         bench_results = testeBoxGen(array_forEach_supplier);
-        System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        System.out.println("[Array:forEach] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
         bench_results = testeBoxGen(array_for_supplier);
-        System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        System.out.println("[Array:for] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
         bench_results = testeBoxGen(Dstream_seq_supplier);
-        System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        System.out.println("[DoubleStream:Sequential] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
         bench_results = testeBoxGen(stream_seq_supplier);
-        System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        System.out.println("[Stream:] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
         bench_results = testeBoxGen(Dstream_parallel_supplier);
-        System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        System.out.println("[DoubleStream:Parallel] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
         bench_results = testeBoxGen(stream_parallel_supplier);
-        System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        System.out.println("[Stream:Parallel] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
     }
 
 //-------------------------------------------------------------------------------------------//
@@ -142,13 +142,13 @@ public class Benchmarks{
             };
 
         bench_results = testeBoxGen(sort_treeset);
-        System.out.println("Sorted in " + bench_results.getKey() + "s");
+        System.out.println("[TreeSet] Sorted in " + bench_results.getKey() + "s");
         bench_results = testeBoxGen(sort_inplace);
-        System.out.println("Sorted in " + bench_results.getKey() + "s");
+        System.out.println("[List] Sorted in " + bench_results.getKey() + "s");
         bench_results = testeBoxGen(sort_seq_stream);
-        System.out.println("Sorted in " + bench_results.getKey() + "s");
+        System.out.println("[Stream:Sequential] Sorted in " + bench_results.getKey() + "s");
         bench_results = testeBoxGen(sort_parallel_stream);
-        System.out.println("Sorted in " + bench_results.getKey() + "s");
+        System.out.println("[Stream:Parallel] Sorted in " + bench_results.getKey() + "s");
     }
 
 //-------------------------------------------------------------------------------------------//
