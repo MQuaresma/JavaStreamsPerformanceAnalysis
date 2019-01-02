@@ -131,24 +131,37 @@ public class Benchmarks{
                 return sorted;
             };
 
-        Supplier<List<TransCaixa>> sort_seq_stream = 
+        Supplier<List<TransCaixa>> sort_seq_stream_30inicial =
             () -> {
-                return transactions.stream().sorted(byDate).collect(Collectors.toList());
+                return transactions.stream().sorted(byDate).limit((long) (transactions.size()* 0.3)).collect(Collectors.toList());
             };
 
-        Supplier<List<TransCaixa>> sort_parallel_stream = 
+        Supplier<List<TransCaixa>> sort_parallel_stream_30inicial =
             () -> {
-                return transactions.parallelStream().sorted(byDate).collect(Collectors.toList());
+                return transactions.parallelStream().sorted(byDate).limit((long) (transactions.size()* 0.3)).collect(Collectors.toList());
             };
+        Supplier<List<TransCaixa>> sort_seq_stream_30final =
+                () -> {
+                    return transactions.stream().sorted(byDate).skip((long) (transactions.size()* 0.7)).collect(Collectors.toList());
+                };
+
+        Supplier<List<TransCaixa>> sort_parallel_stream_30final =
+                () -> {
+                    return transactions.parallelStream().sorted(byDate).skip((long) (transactions.size()* 0.7)).collect(Collectors.toList());
+                };
 
         bench_results = testeBoxGen(sort_treeset);
         System.out.println("[TreeSet] Sorted in " + bench_results.getKey() + "s");
         bench_results = testeBoxGen(sort_inplace);
         System.out.println("[List] Sorted in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(sort_seq_stream);
-        System.out.println("[Stream:Sequential] Sorted in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(sort_parallel_stream);
-        System.out.println("[Stream:Parallel] Sorted in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(sort_seq_stream_30inicial);
+        System.out.println("[Stream:Sequential] First 30% Sorted in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(sort_parallel_stream_30inicial);
+        System.out.println("[Stream:Parallel] First 30% Sorted in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(sort_seq_stream_30final);
+        System.out.println("[Stream:Sequential] Last 30% Sorted in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(sort_parallel_stream_30final);
+        System.out.println("[Stream:Parallel] Last 30% Sorted in " + bench_results.getKey() + "s");
     }
 
 //-------------------------------------------------------------------------------------------//
