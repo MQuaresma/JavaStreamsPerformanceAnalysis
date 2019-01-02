@@ -206,6 +206,7 @@ public class Benchmarks{
 
 //-------------------------------------------------------------------------------------------//
 //                                           T4                                              //
+// Product of double values                                                                  //
 //-------------------------------------------------------------------------------------------//
 
     private static double method_multiplication (double number_1, double number_2){
@@ -282,17 +283,17 @@ public class Benchmarks{
         };
 
         bench_results = testeBoxGen(mult_method_stream);
-        System.out.println("Calculated in " + bench_results.getKey() + "s");
+        System.out.println("[Static Method : Stream: Sequential] Calculated in " + bench_results.getKey() + "s");
         bench_results = testeBoxGen(mult_method_parallel);
-        System.out.println("Calculated in " + bench_results.getKey() + "s");
+        System.out.println("[Static Method : Stream: Parallel] Calculated in " + bench_results.getKey() + "s");
         bench_results = testeBoxGen(mult_bi_stream);
-        System.out.println("Calculated in " + bench_results.getKey() + "s");
+        System.out.println("[BiFunction : Stream: Sequential] Calculated in " + bench_results.getKey() + "s");
         bench_results = testeBoxGen(mult_bi_stream);
-        System.out.println("Calculated in " + bench_results.getKey() + "s");
+        System.out.println("[BiFunction : Stream: Parallel] Calculated in " + bench_results.getKey() + "s");
         bench_results = testeBoxGen(mult_lambda_stream);
-        System.out.println("Calculated in " + bench_results.getKey() + "s");
+        System.out.println("[Lambda : Stream: Sequential] Calculated in " + bench_results.getKey() + "s");
         bench_results = testeBoxGen(mult_lambda_parallel);
-        System.out.println("Calculated in " + bench_results.getKey() + "s");
+        System.out.println("[Lambda : Stream: Parallel] Calculated in " + bench_results.getKey() + "s");
     }
 
 //-------------------------------------------------------------------------------------------//
@@ -349,14 +350,32 @@ public static void T5(List<TransCaixa> transactions){
         };
 
     bench_results_tree = testeBoxGen(sort_treeset_stream);
-    System.out.println("Sorted in " + bench_results_tree.getKey() + "s");
+    System.out.println("[TreeSet: Stream : Sequential] Sorted in " + bench_results_tree.getKey() + "s");
     bench_results_tree = testeBoxGen(sort_treeset_parallel);
-    System.out.println("Sorted in " + bench_results_tree.getKey() + "s");
+    System.out.println("[TreeSet: Stream : Parallel] Sorted in " + bench_results_tree.getKey() + "s");
     bench_results_list = testeBoxGen(sort_seq_stream);
-    System.out.println("Sorted in " + bench_results_list.getKey() + "s");
+    System.out.println("[List: Stream : Sequential] Sorted in " + bench_results_list.getKey() + "s");
     bench_results_list = testeBoxGen(sort_seq_parallel);
-    System.out.println("Sorted in " + bench_results_list.getKey() + "s");
+    System.out.println("[List: Stream : Parallel] Sorted in " + bench_results_list.getKey() + "s");
 }
+
+//-------------------------------------------------------------------------------------------//
+//                                           T6                                              //
+//-------------------------------------------------------------------------------------------//
+
+public static void T6(List<TransCaixa> transactions){
+
+    Supplier<Map<Integer,Map<Integer,Map<Integer, List<TransCaixa>>>>> stream_grouper = 
+        () -> {
+            return transactions.stream()
+                        .collect(groupingBy(t -> t.getData().getMonthValue(),
+                                            groupingBy(t -> t.getData().getDayOfMonth(),
+                                                        groupingBy(t -> t.getData().getHour()))));
+        };
+
+    Iterator<TransCaixa> it = transactions.iterator();
+}
+
     
 //-------------------------------------------------------------------------------------------//
 //                                           T7                                              //
