@@ -361,9 +361,11 @@ public static void T5(List<TransCaixa> transactions){
 
 //-------------------------------------------------------------------------------------------//
 //                                           T6                                              //
+// Group values according to month, day, hour                                                //
 //-------------------------------------------------------------------------------------------//
 
 public static void T6(List<TransCaixa> transactions){
+    SimpleEntry<Double, Map<Integer,Map<Integer,Map<Integer, List<TransCaixa>>>>> bench_results;
 
     Supplier<Map<Integer,Map<Integer,Map<Integer, List<TransCaixa>>>>> stream_grouper = 
         () -> {
@@ -372,8 +374,58 @@ public static void T6(List<TransCaixa> transactions){
                                             groupingBy(t -> t.getData().getDayOfMonth(),
                                                         groupingBy(t -> t.getData().getHour()))));
         };
+    
+    Supplier<Map<Integer,Map<Integer,Map<Integer, List<TransCaixa>>>>> iterator_grouper = 
+        () -> {
+            Map<Integer,Map<Integer,Map<Integer, List<TransCaixa>>>> res = new HashMap<>();;
+            Map<Integer, Map<Integer, List<TransCaixa>>> day_hour;
+            Map<Integer, List<TransCaixa>> hour_transactions;
+            List<TransCaixa> list;
+            TransCaixa aux;
+            LocalDateTime aux_dt;
+            Iterator<TransCaixa> it = transactions.iterator();
 
-    Iterator<TransCaixa> it = transactions.iterator();
+            while(it.hasNext()){
+                aux = it.next();
+                aux_dt = aux.getData();
+                day_hour = res.getOrDefault(aux_dt.getMonthValue(), new HashMap<>());
+                hour_transactions = day_hour.getOrDefault(aux_dt.getDayOfMonth(), new HashMap<>());  
+                list = hour_transactions.getOrDefault(aux_dt.getHour(), new ArrayList<>());
+                list.add(aux);
+                hour_transactions.put(aux_dt.getHour(), list);
+                day_hour.put(aux_dt.getDayOfMonth(), hour_transactions);
+                res.put(aux_dt.getMonthValue(), day_hour);
+            }
+            return res;
+        };
+
+    Supplier<Map<Integer,Map<Integer,Map<Integer, List<TransCaixa>>>>> forEach_grouper = 
+        () -> {
+            Map<Integer,Map<Integer,Map<Integer, List<TransCaixa>>>> res = new HashMap<>();;
+            Map<Integer, Map<Integer, List<TransCaixa>>> day_hour;
+            Map<Integer, List<TransCaixa>> hour_transactions;
+            List<TransCaixa> list;
+            LocalDateTime aux_dt;
+
+            for(TransCaixa t: transactions){
+                aux_dt = t.getData();
+                day_hour = res.getOrDefault(aux_dt.getMonthValue(), new HashMap<>());
+                hour_transactions = day_hour.getOrDefault(aux_dt.getDayOfMonth(), new HashMap<>());  
+                list = hour_transactions.getOrDefault(aux_dt.getHour(), new ArrayList<>());
+                list.add(t);
+                hour_transactions.put(aux_dt.getHour(), list);
+                day_hour.put(aux_dt.getDayOfMonth(), hour_transactions);
+                res.put(aux_dt.getMonthValue(), day_hour);
+            }
+            return res;
+        };
+
+    bench_results = testeBoxGen(stream_grouper);
+    System.out.println("[Stream] Grouped in " + bench_results.getKey() + "s");
+    bench_results = testeBoxGen(iterator_grouper);
+    System.out.println("[Iterator] Grouped in " + bench_results.getKey() + "s");
+    bench_results = testeBoxGen(forEach_grouper);
+    System.out.println("[forEach] Grouped in " + bench_results.getKey() + "s");
 }
 
     
@@ -419,16 +471,17 @@ public static void T7(List<TransCaixa> transactions){
         };*/
 
     bench_results = testeBoxGen(list_sum_list);
-    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    System.out.println("[List] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
     bench_results = testeBoxGen(list_sum_stream);
-    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    System.out.println("[Stream : Sequential] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
     bench_results = testeBoxGen(list_sum_parallel);
-    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    System.out.println("[Stream : Parallel] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
     
 }
 
 //-------------------------------------------------------------------------------------------//
 //                                           T8                                              //
+// Max value of a filtered Collection                                                        //
 //-------------------------------------------------------------------------------------------//
 
 public static void T8(List<TransCaixa> transactions){
@@ -441,15 +494,12 @@ public static void T8(List<TransCaixa> transactions){
     () -> {
         String r = "";
         double v = Double.MIN_NORMAL;
-        LocalDateTime ldt;
-        LocalTime lt;
-        for (TransCaixa t : transactions){
-            ldt = t.getData();
-            lt = ldt.toLocalTime();
-            if (t.getData().isAfter(ld1) && t.getData().isBefore(ld2)){
-                if (t.getValor() > v){ r = t.getTrans(); v = t.getValor(); }
-            }
-        }
+        for (TransCaixa t : transactions)
+            if (t.getData().isAfter(ld1) && t.getData().isBefore(ld2))
+                if (t.getValor() > v){ 
+                    r = t.getTrans(); 
+                    v = t.getValor(); 
+                }
         return r;    
     };
 
@@ -465,8 +515,7 @@ public static void T8(List<TransCaixa> transactions){
         };
 
     Supplier<String> java_8_biggest_tcode = 
-    () -> {
-        double v = 0; String r = "";
+    () -> {;
         Optional<TransCaixa> tr = transactions.stream()  
                     .filter(t -> t.getData().isAfter(ld1) && t.getData().isBefore(ld2))
                     .max(byValor);
@@ -475,7 +524,6 @@ public static void T8(List<TransCaixa> transactions){
 
     Supplier<String> java_8_biggest_tcode_parallel = 
     () -> {
-        double v = 0; String r = "";
         Optional<TransCaixa> tr = transactions.parallelStream()  
                     .filter(t -> t.getData().isAfter(ld1) && t.getData().isBefore(ld2))
                     .max(byValor);
@@ -483,84 +531,150 @@ public static void T8(List<TransCaixa> transactions){
     };
 
     bench_results = testeBoxGen(java_7_biggest_tcode);
-    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    System.out.println("[J7] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
     bench_results = testeBoxGen(java_8_biggest_tcode);
-    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    System.out.println("[Stream : Sequential] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
     bench_results = testeBoxGen(java_8_biggest_tcode_parallel);
-    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    System.out.println("[Stream : Parallel] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
 
 }
 
 //-------------------------------------------------------------------------------------------//
-//                                           T10                                              //
+//                                           T9                                              //
+// Sum of transactions made during a week period                                             //
+//-------------------------------------------------------------------------------------------//
+
+public static void T9(List<TransCaixa> transactions) {
+    SimpleEntry<Double,Double> faturado_bench_results;
+    List<List<TransCaixa>> week_transactions = transactions.stream()
+                                                           .collect(groupingBy(t->t.getData().toLocalDate().get(ChronoField.ALIGNED_WEEK_OF_YEAR)))
+                                                           .values()
+                                                           .stream()
+                                                           .collect(toList());
+
+    Supplier<Double> stream_seq_faturado =
+        () -> {
+            return week_transactions.stream()
+                                    .mapToDouble(listasemana-> listasemana.stream()
+                                                                    .mapToDouble(t->t.getValor())
+                                                                    .sum())
+                                    .sum();
+        };
+    
+    Supplier<Double> stream_parallel_faturado =
+        () -> {
+            return week_transactions.stream()
+                                    .parallel()
+                                    .mapToDouble(listasemana-> listasemana.stream()
+                                                                    .mapToDouble(t->t.getValor())
+                                                                    .sum())
+                                    .sum();
+        };
+
+    Supplier<Double> java_7_faturado =
+        () -> {
+            double week_sum = 0.f;
+
+            for (List<TransCaixa> semana:week_transactions) {
+                for (TransCaixa t : semana)
+                    week_sum += t.getValor();
+
+            }
+            return week_sum;
+        };
+
+    faturado_bench_results = testeBoxGen(stream_seq_faturado);
+    System.out.println("[Stream : Sequential] Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
+    faturado_bench_results = testeBoxGen(stream_parallel_faturado);
+    System.out.println("[Stream : Parallel] Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
+    faturado_bench_results = testeBoxGen(java_7_faturado);
+    System.out.println("[forEach] Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
+}
+
+//-------------------------------------------------------------------------------------------//
+//                                           T10                                             //
+// Monthly IVA value                                                                         //
 //-------------------------------------------------------------------------------------------//
 
 public static double get_iva(double valor){
-    if (valor < 20) return 12;
-    else if (valor < 29) return 20;
-    else return 23;
+    if (valor < 20) return 0.12;
+    else if (valor < 29) return 0.20;
+    else return 0.23;
 }
 
 public static void T10(List<TransCaixa> transactions){
+    SimpleEntry<Double, Map<Integer, Double>> bench_results;
 
-    SimpleEntry<Double, Double> bench_results;
+    Supplier<Map<Integer, Double>> java_7_iva = 
+        () -> {
+            Map<Integer, Double> monthly_iva = new HashMap<>();
+            int month;
+            double valor, sum;
 
-    Supplier<Double> java_7_iva = 
-    () -> {
-          double valor_iva = 0.f;
-          double valor;
-          double iva;
-          for (TransCaixa t : transactions){
-            valor = t.getValor();
-            valor_iva += valor * get_iva(valor); 
-          }
-          return valor_iva;
-    };
+            for (TransCaixa t : transactions){
+                month = t.getData().getMonthValue();
+                sum = monthly_iva.getOrDefault(month, 0.0);
+                valor = t.getValor();
+                sum += valor * get_iva(valor);
+                monthly_iva.put(month, sum);
+            }
+            
+            return monthly_iva;
+        };
 
-    Supplier<Double> java_8_iva = 
-    () -> {
-          return transactions.stream()
-                             .mapToDouble(t -> t.getValor())
-                             .map(v -> v * get_iva(v))
-                             .sum();
-    };
+    Supplier<Map<Integer, Double>> stream_seq_iva = 
+        () -> {
+            return transactions.stream()
+                                .collect(
+                                    groupingBy(t -> t.getData().getMonthValue(), 
+                                                summingDouble(t -> {
+                                                    double valor = t.getValor();
+                                                    return valor*get_iva(valor);
+                                                })));
+        };
 
-    Supplier<Double> java_8_iva_parallel = 
-    () -> {
-          return transactions.parallelStream()
-                             .mapToDouble(t -> t.getValor())
-                             .map(v -> v * get_iva(v))
-                             .sum();
-    };
+    Supplier<Map<Integer, Double>> stream_parallel_iva = 
+        () -> {
+            return transactions.stream()
+                               .parallel()
+                               .collect(
+                                    groupingBy(t -> t.getData().getMonthValue(), 
+                                                summingDouble(t -> {
+                                                    double valor = t.getValor();
+                                                    return valor*get_iva(valor);
+                                                })));
+        };
 
     bench_results = testeBoxGen(java_7_iva);
-    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-    bench_results = testeBoxGen(java_8_iva);
-    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-    bench_results = testeBoxGen(java_8_iva_parallel);
-    System.out.println("Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    System.out.println("[forEach : Java7] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    bench_results = testeBoxGen(stream_seq_iva);
+    System.out.println("[Stream : Sequential] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    bench_results = testeBoxGen(stream_parallel_iva);
+    System.out.println("[Stream : Parallel] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
 
 }
 //-------------------------------------------------------------------------------------------//
 //                                           T12                                              //
 //-------------------------------------------------------------------------------------------//
 public static void T12(List<TransCaixa> transactions) {
-    SimpleEntry<Double, Map<String,Map<Month,List<TransCaixa>>>> map_bench_results;
-    SimpleEntry<Double, ConcurrentMap<String,ConcurrentMap<Month,List<TransCaixa>>>> concmap_bench_results;
+    SimpleEntry<Double, Map<String,Map<Integer,List<TransCaixa>>>> map_bench_results;
+    SimpleEntry<Double, ConcurrentMap<String,ConcurrentMap<Integer,List<TransCaixa>>>> concmap_bench_results;
+    
     SimpleEntry<Double,Map<String,Double>> total_faturado_map;
     SimpleEntry<Double,ConcurrentMap<String,Double>> total_faturado_conc;
-    Supplier<Map<String,Map<Month,List<TransCaixa>>>> map =
+
+    Supplier<Map<String,Map<Integer,List<TransCaixa>>>> map =
             () -> {
                 return transactions.stream()
                                    .collect(groupingBy(t->t.getCaixa(),
-                                                       groupingBy(t->t.getData().getMonth())));
+                                                       groupingBy(t->t.getData().getMonthValue())));
             };
 
-    Supplier<ConcurrentMap<String,ConcurrentMap<Month,List<TransCaixa>>>> concMap =
+    Supplier<ConcurrentMap<String,ConcurrentMap<Integer,List<TransCaixa>>>> concMap =
             () -> {
                 return transactions.stream()
                                    .collect(groupingByConcurrent(t->t.getCaixa(),
-                                                                 groupingByConcurrent(t->t.getData().getMonth())));
+                                                                 groupingByConcurrent(t->t.getData().getMonthValue())));
             };
 
     Supplier<Map<String,Double>> fat_map =
@@ -579,80 +693,13 @@ public static void T12(List<TransCaixa> transactions) {
 
 
     map_bench_results = testeBoxGen(map);
-    System.out.println("Computed " + map_bench_results.getValue() + " in " + map_bench_results.getKey() + "s");
+    System.out.println("[Map] Computed " + map_bench_results.getValue() + " in " + map_bench_results.getKey() + "s");
     concmap_bench_results = testeBoxGen(concMap);
-    System.out.println("Computed " + concmap_bench_results.getValue() + " in " + concmap_bench_results.getKey() + "s");
+    System.out.println("[Concurrent Map] Computed " + concmap_bench_results.getValue() + " in " + concmap_bench_results.getKey() + "s");
     total_faturado_map = testeBoxGen(fat_map);
-    System.out.println("Computed " + total_faturado_map.getValue() + " in " + total_faturado_map.getKey() + "s");
+    System.out.println("[Map] Computed " + total_faturado_map.getValue() + " in " + total_faturado_map.getKey() + "s");
     total_faturado_conc = testeBoxGen(fat_conc_map);
-    System.out.println("Computed " + total_faturado_conc.getValue() + " in " + total_faturado_conc.getKey() + "s");
-}
-
-
-//-------------------------------------------------------------------------------------------//
-//                                           T9                                              //
-//-------------------------------------------------------------------------------------------//
-public static void T9(List<TransCaixa> transactions) {
-    SimpleEntry<Double,List<List<TransCaixa>>> listas_bench_results;
-    SimpleEntry<Double,List<Double>> faturado_bench_results;
-
-    Supplier<List<List<TransCaixa>>> java_8_listas =
-            () -> {
-                return transactions.stream()
-                                   .collect(groupingBy(t->t.getData().toLocalDate().get(ChronoField.ALIGNED_WEEK_OF_YEAR)))
-                                   .values()
-                                   .stream()
-                                   .collect(toList());
-            };
-
-    Supplier<List<List<TransCaixa>>> java_7_listas =
-            () -> {
-                List<List<TransCaixa>> listas = new ArrayList<>(100);
-                for (int i=0;i<54;i++) {
-                    listas.add(i,new ArrayList<>());
-                }
-                for (TransCaixa t:transactions) {
-                    int week = t.getData().toLocalDate().get(ChronoField.ALIGNED_WEEK_OF_YEAR);
-                    listas.get(week).add(t);
-                }
-                return listas;
-            };
-    Supplier<List<Double>> java_8_faturado =
-            () -> {
-                List<List<TransCaixa>> listas = java_8_listas.get();
-
-                return listas.stream()
-                             .map(listasemana-> listasemana.stream()
-                                                                   .mapToDouble(t->t.getValor())
-                                                                   .sum())
-                             .collect(toList());
-            };
-    Supplier<List<Double>> java_7_faturado =
-            () -> {
-                List<List<TransCaixa>> listas = java_7_listas.get();
-                List<Double> faturados = new ArrayList<>();
-                for (List<TransCaixa> semana:listas) {
-                    double r =0;
-                    if (semana.size()>0) {
-                        for (TransCaixa t : semana) {
-                            r += t.getValor();
-                        }
-
-                        faturados.add(r);
-                    }
-
-                }
-                return faturados;
-            };
-
-    listas_bench_results = testeBoxGen(java_8_listas);
-    System.out.println("Computed " + listas_bench_results.getValue() + " in " + listas_bench_results.getKey() + "s");
-    listas_bench_results = testeBoxGen(java_7_listas);
-    System.out.println("Computed " + listas_bench_results.getValue() + " in " + listas_bench_results.getKey() + "s");
-    faturado_bench_results = testeBoxGen(java_8_faturado);
-    System.out.println("Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
-    faturado_bench_results = testeBoxGen(java_7_faturado);
-    System.out.println("Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
+    System.out.println("[Concurrent Map] Computed " + total_faturado_conc.getValue() + " in " + total_faturado_conc.getKey() + "s");
 }
 
 //-------------------------------------------------------------------------------------------//

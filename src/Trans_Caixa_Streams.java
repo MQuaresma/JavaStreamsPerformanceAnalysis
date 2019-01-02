@@ -85,16 +85,16 @@ public class Trans_Caixa_Streams {
         List<TransCaixa> transaction_list = new ArrayList<>();
         transaction_list = setup(nomeFich);
 
-        //Benchmarks.T1(transaction_list);
-        //Benchmarks.T2(transaction_list);
-        //Benchmarks.T3(100000);
-        //Benchmarks.T4(transaction_list);
+        Benchmarks.T1(transaction_list);
+        Benchmarks.T2(transaction_list);
+        Benchmarks.T3(100000);
+        Benchmarks.T4(transaction_list);
         Benchmarks.T5(transaction_list);
         Benchmarks.T6(transaction_list);
-        //Benchmarks.T7(transaction_list);
-        //Benchmarks.T8(transaction_list);
-        //Benchmarks.T9(transaction_list);
-        //Benchmarks.T10(transaction_list);
-        //Benchmarks.T12(transaction_list);
+        Benchmarks.T7(transaction_list);
+        Benchmarks.T8(transaction_list);
+        Benchmarks.T9(transaction_list);
+        Benchmarks.T10(transaction_list);
+        Benchmarks.T12(transaction_list);
     }
 }
