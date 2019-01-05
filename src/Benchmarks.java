@@ -19,7 +19,9 @@ import java.util.stream.IntStream;
 import java.util.function.BiFunction;
 import java.time.*;
 import java.util.*;
-
+import java.util.function.Consumer;
+import java.util.stream.DoubleStream;
+import java.util.stream.StreamSupport;
 import static java.util.stream.Collectors.*;
 
 public class Benchmarks{
@@ -557,17 +559,42 @@ public static void T7(List<TransCaixa> transactions){
     /*Supplier<Double> spliterator_sum_foreach =
         () -> {
             double sum = 0;
-            spliterator1.forEachRemaining(t -> sum += t.getValor());
+            for (TransCaixa t : spliterator1){
+                sum += t.getValor();
+            }
             return sum;
         };*/
 
-    bench_results = testeBoxGen(list_sum_list);
-    System.out.println("[List] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-    bench_results = testeBoxGen(list_sum_stream);
-    System.out.println("[Stream : Sequential] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-    bench_results = testeBoxGen(list_sum_parallel);
-    System.out.println("[Stream : Parallel] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    Supplier<Double> spliterator_sum_seq_stream =
+        () -> {
+            // isto funciona
+            // StreamSupport.stream(spliterator1, false).mapToDouble(TransCaixa::getValor).forEach(System.out::println);
+            double sum_1 = StreamSupport.stream(spliterator1, false).mapToDouble(TransCaixa::getValor).sum();
+            double sum_2 = StreamSupport.stream(spliterator2, false).mapToDouble(TransCaixa::getValor).sum();
+            double sum_3 = StreamSupport.stream(spliterator3, false).mapToDouble(TransCaixa::getValor).sum();
+            double sum_4 = StreamSupport.stream(spliterator4, false).mapToDouble(TransCaixa::getValor).sum();
+            return sum_1 + sum_2 + sum_3 + sum_4;
+        };
     
+    Supplier<Double> spliterator_sum_parallel_stream =
+        () -> {
+            double sum_1 = StreamSupport.stream(spliterator1, true).mapToDouble(TransCaixa::getValor).sum();
+            double sum_2 = StreamSupport.stream(spliterator2, true).mapToDouble(TransCaixa::getValor).sum();
+            double sum_3 = StreamSupport.stream(spliterator3, true).mapToDouble(TransCaixa::getValor).sum();
+            double sum_4 = StreamSupport.stream(spliterator4, true).mapToDouble(TransCaixa::getValor).sum();
+            return sum_1 + sum_2 + sum_3 + sum_4;
+        };
+
+    bench_results = testeBoxGen(list_sum_list);
+    System.out.println("[List]                      Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    bench_results = testeBoxGen(list_sum_stream);
+    System.out.println("[Stream : Sequential]       Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    bench_results = testeBoxGen(list_sum_parallel);
+    System.out.println("[Stream : Parallel]         Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    bench_results = testeBoxGen(spliterator_sum_seq_stream);
+    System.out.println("[Spliterator : Seq Stream]  Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    bench_results = testeBoxGen(spliterator_sum_parallel_stream);
+    System.out.println("[Spliterator : Par. Stream] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
 }
 
 //-------------------------------------------------------------------------------------------//

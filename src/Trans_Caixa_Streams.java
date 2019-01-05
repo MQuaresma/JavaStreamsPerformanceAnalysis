@@ -80,7 +80,7 @@ public class Trans_Caixa_Streams {
     
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         //REMOVE WHEN COMMITING
-        String path_prefix = "";
+        String path_prefix = "../../../Streams/input/";
         String nomeFich = path_prefix + "transCaixa1M.txt";
         List<TransCaixa> transaction_list = new ArrayList<>();
         transaction_list = setup(nomeFich);
