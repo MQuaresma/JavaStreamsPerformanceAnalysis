@@ -105,6 +105,7 @@ public class Benchmarks{
 
     public static void T2(List<TransCaixa> transactions){
         SimpleEntry<Double,Collection<TransCaixa>> bench_results;
+
         Comparator<TransCaixa> byDate = 
             (TransCaixa tc1, TransCaixa tc2) -> {
                 LocalDateTime t1 = tc1.getData();
@@ -116,6 +117,72 @@ public class Benchmarks{
                 else return 1;  
             };
         
+        Supplier<List<TransCaixa>> sort_treeset_seq_stream =
+            () -> {
+                TreeSet<TransCaixa> transactions_tree = new TreeSet<>(byDate);
+                transactions_tree.addAll(transactions);
+                List<TransCaixa> first_30 = transactions_tree.stream()
+                                                             .limit((long) (transactions_tree.size() * 0.3))
+                                                             .collect(Collectors.toList());
+                List<TransCaixa> last_30 = transactions_tree.stream()
+                                                            .skip((long) (transactions_tree.size() * 0.7))
+                                                            .collect(Collectors.toList());
+                return new ArrayList<TransCaixa>() {{addAll(first_30); addAll(last_30);}};
+            };
+
+        Supplier<List<TransCaixa>> sort_treeset_parallel_stream =
+            () -> {
+                TreeSet<TransCaixa> transactions_tree = new TreeSet<>(byDate);
+                transactions_tree.addAll(transactions);
+                List<TransCaixa> first_30 = transactions_tree.parallelStream()
+                                                             .limit((long) (transactions_tree.size() * 0.3))
+                                             .collect(Collectors.toList());
+                List<TransCaixa> last_30 = transactions_tree.parallelStream()
+                                                            .skip((long) (transactions_tree.size() * 0.7))
+                                                            .collect(Collectors.toList());
+                return new ArrayList<TransCaixa>() {{addAll(first_30); addAll(last_30);}};
+            };
+        
+        Supplier<List<TransCaixa>> sort_list_seq_stream =
+            () -> {
+                List<TransCaixa> transactions_list = new ArrayList<>();
+                transactions_list.addAll(transactions);
+                List<TransCaixa> first_30 = transactions_list.stream()
+                                                             .sorted(byDate)
+                                                             .limit((long) (transactions_list.size() * 0.3))
+                                                             .collect(Collectors.toList());
+                List<TransCaixa> last_30 = transactions_list.stream()
+                                                            .sorted(byDate)
+                                                            .skip((long) (transactions_list.size() * 0.7))
+                                                            .collect(Collectors.toList());
+                return new ArrayList<TransCaixa>() {{addAll(first_30); addAll(last_30);}};
+            };
+
+        Supplier<List<TransCaixa>> sort_list_parallel_stream =
+            () -> {
+                List<TransCaixa> transactions_list = new ArrayList<>();
+                transactions_list.addAll(transactions);
+                List<TransCaixa> first_30 = transactions_list.parallelStream()
+                                                             .sorted(byDate)
+                                                             .limit((long) (transactions_list.size() * 0.3))
+                                                             .collect(Collectors.toList());
+                List<TransCaixa> last_30 = transactions_list.parallelStream()
+                                                            .sorted(byDate)
+                                                            .skip((long) (transactions_list.size() * 0.7))
+                                                            .collect(Collectors.toList());
+                return new ArrayList<TransCaixa>() {{addAll(first_30); addAll(last_30);}};
+            };
+
+        bench_results = testeBoxGen(sort_treeset_seq_stream);
+        System.out.println("[TreeSet - Sequential Stream] Sorted in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(sort_treeset_parallel_stream);
+        System.out.println("[TreeSet - Parallel Stream]   Sorted in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(sort_list_seq_stream);
+        System.out.println("[List - Sequential Stream]    Sorted in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(sort_list_parallel_stream);
+        System.out.println("[List - Parallel Stream]      Sorted in " + bench_results.getKey() + "s");
+            
+        /*
         Supplier<Set<TransCaixa>> sort_treeset = 
             () -> {
                 TreeSet<TransCaixa> treesorted = new TreeSet<>(byDate);
@@ -140,15 +207,16 @@ public class Benchmarks{
             () -> {
                 return transactions.parallelStream().sorted(byDate).limit((long) (transactions.size()* 0.3)).collect(Collectors.toList());
             };
+
         Supplier<List<TransCaixa>> sort_seq_stream_30final =
-                () -> {
-                    return transactions.stream().sorted(byDate).skip((long) (transactions.size()* 0.7)).collect(Collectors.toList());
-                };
+            () -> {
+                return transactions.stream().sorted(byDate).skip((long) (transactions.size()* 0.7)).collect(Collectors.toList());
+            };
 
         Supplier<List<TransCaixa>> sort_parallel_stream_30final =
-                () -> {
-                    return transactions.parallelStream().sorted(byDate).skip((long) (transactions.size()* 0.7)).collect(Collectors.toList());
-                };
+            () -> {
+                return transactions.parallelStream().sorted(byDate).skip((long) (transactions.size()* 0.7)).collect(Collectors.toList());
+            };
 
         bench_results = testeBoxGen(sort_treeset);
         System.out.println("[TreeSet] Sorted in " + bench_results.getKey() + "s");
@@ -162,6 +230,7 @@ public class Benchmarks{
         System.out.println("[Stream:Sequential] Last 30% Sorted in " + bench_results.getKey() + "s");
         bench_results = testeBoxGen(sort_parallel_stream_30final);
         System.out.println("[Stream:Parallel] Last 30% Sorted in " + bench_results.getKey() + "s");
+        */
     }
 
 //-------------------------------------------------------------------------------------------//
