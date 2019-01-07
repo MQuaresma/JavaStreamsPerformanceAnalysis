@@ -80,21 +80,26 @@ public class Trans_Caixa_Streams {
     
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         //REMOVE WHEN COMMITING
-        String path_prefix = "../../../Streams/input/";
-        String nomeFich = path_prefix + "transCaixa1M.txt";
+        String path_prefix = "";
+        List<String> test_files = Arrays.asList("transCaixa1M.txt", "transCaixa2M.txt", "transCaixa4M.txt", "transCaixa6M.txt");
         List<TransCaixa> transaction_list = new ArrayList<>();
-        transaction_list = setup(nomeFich);
 
-        Benchmarks.T1(transaction_list);
-        Benchmarks.T2(transaction_list);
-        Benchmarks.T3(100000);
-        Benchmarks.T4(transaction_list);
-        Benchmarks.T5(transaction_list);
-        Benchmarks.T6(transaction_list);
-        Benchmarks.T7(transaction_list);
-        Benchmarks.T8(transaction_list);
-        Benchmarks.T9(transaction_list);
-        Benchmarks.T10(transaction_list);
-        Benchmarks.T12(transaction_list);
+        for(String file: test_files){
+            transaction_list = setup(path_prefix+file);
+            out.println(file);
+            Benchmarks.T1(transaction_list, true);
+            /*
+            Benchmarks.T2(transaction_list);
+            Benchmarks.T3(100000);
+            Benchmarks.T4(transaction_list);
+            Benchmarks.T5(transaction_list);
+            Benchmarks.T6(transaction_list);
+            Benchmarks.T7(transaction_list);
+            Benchmarks.T8(transaction_list);
+            Benchmarks.T9(transaction_list);
+            Benchmarks.T10(transaction_list);
+            Benchmarks.T12(transaction_list);
+            */
+        }
     }
 }

@@ -31,7 +31,7 @@ public class Benchmarks{
 // Calculate sum of transaction values                                                       //
 //-------------------------------------------------------------------------------------------//
 
-    public static void T1(List<TransCaixa> transactions){
+    public static void T1(List<TransCaixa> transactions, boolean sampling){
         SimpleEntry<Double,Double> bench_results;
         double[] transactions_array = transactions
                                             .stream()
@@ -86,18 +86,27 @@ public class Benchmarks{
                             .reduce(0.0, (ac, n) -> ac + n);
             };
         
-        bench_results = testeBoxGen(array_forEach_supplier);
-        System.out.println("[Array:forEach]           Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(array_for_supplier);
-        System.out.println("[Array:for]               Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(Dstream_seq_supplier);
-        System.out.println("[DoubleStream:Sequential] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(stream_seq_supplier);
-        System.out.println("[Stream:]                 Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(Dstream_parallel_supplier);
-        System.out.println("[DoubleStream:Parallel]   Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(stream_parallel_supplier);
-        System.out.println("[Stream:Parallel]         Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        if(!sampling){
+            bench_results = testeBoxGen(array_forEach_supplier);
+            System.out.println("[Array:forEach]           Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+            bench_results = testeBoxGen(array_for_supplier);
+            System.out.println("[Array:for]               Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+            bench_results = testeBoxGen(Dstream_seq_supplier);
+            System.out.println("[DoubleStream:Sequential] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+            bench_results = testeBoxGen(stream_seq_supplier);
+            System.out.println("[Stream:]                 Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+            bench_results = testeBoxGen(Dstream_parallel_supplier);
+            System.out.println("[DoubleStream:Parallel]   Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+            bench_results = testeBoxGen(stream_parallel_supplier);
+            System.out.println("[Stream:Parallel]         Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        }else{
+            System.out.println("[Array:forEach]           Computed  in " + sampler(array_forEach_supplier) + "s");
+            System.out.println("[Array:for]               Computed  in " + sampler(array_for_supplier) + "s");
+            System.out.println("[DoubleStream:Sequential] Computed  in " + sampler(Dstream_seq_supplier) + "s");
+            System.out.println("[Stream:]                 Computed  in " + sampler(stream_seq_supplier) + "s");
+            System.out.println("[DoubleStream:Parallel]   Computed  in " + sampler(Dstream_parallel_supplier) + "s");
+            System.out.println("[Stream:Parallel]         Computed  in " + sampler(stream_parallel_supplier) + "s");
+        }
     }
 
 //-------------------------------------------------------------------------------------------//
@@ -105,7 +114,7 @@ public class Benchmarks{
 // Fetch portion of Collection based on sorting criteria (first/last 30%)                    //
 //-------------------------------------------------------------------------------------------//
 
-    public static void T2(List<TransCaixa> transactions){
+    public static void T2(List<TransCaixa> transactions, boolean sampling){
         SimpleEntry<Double,Collection<TransCaixa>> bench_results;
 
         Comparator<TransCaixa> byDate = 
@@ -174,15 +183,22 @@ public class Benchmarks{
                                                             .collect(Collectors.toList());
                 return new ArrayList<TransCaixa>() {{addAll(first_30); addAll(last_30);}};
             };
-
-        bench_results = testeBoxGen(sort_treeset_seq_stream);
-        System.out.println("[TreeSet - Sequential Stream] Sorted in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(sort_treeset_parallel_stream);
-        System.out.println("[TreeSet - Parallel Stream]   Sorted in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(sort_list_seq_stream);
-        System.out.println("[List - Sequential Stream]    Sorted in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(sort_list_parallel_stream);
-        System.out.println("[List - Parallel Stream]      Sorted in " + bench_results.getKey() + "s");
+        
+        if(!sampling){
+            bench_results = testeBoxGen(sort_treeset_seq_stream);
+            System.out.println("[TreeSet - Sequential Stream] Sorted in " + bench_results.getKey() + "s");
+            bench_results = testeBoxGen(sort_treeset_parallel_stream);
+            System.out.println("[TreeSet - Parallel Stream]   Sorted in " + bench_results.getKey() + "s");
+            bench_results = testeBoxGen(sort_list_seq_stream);
+            System.out.println("[List - Sequential Stream]    Sorted in " + bench_results.getKey() + "s");
+            bench_results = testeBoxGen(sort_list_parallel_stream);
+            System.out.println("[List - Parallel Stream]      Sorted in " + bench_results.getKey() + "s");
+        }else{
+            System.out.println("[TreeSet - Sequential Stream] Sorted in " + sampler(sort_treeset_seq_stream) + "s");
+            System.out.println("[TreeSet - Parallel Stream]   Sorted in " + sampler(sort_treeset_parallel_stream) + "s");
+            System.out.println("[List - Sequential Stream]    Sorted in " + sampler(sort_list_seq_stream) + "s");
+            System.out.println("[List - Parallel Stream]      Sorted in " + sampler(sort_list_parallel_stream) + "s");
+        }
             
         /*
         Supplier<Set<TransCaixa>> sort_treeset = 
@@ -241,7 +257,7 @@ public class Benchmarks{
 //  length: no. of elements in Collection                                                    //
 //-------------------------------------------------------------------------------------------//
 
-    public static void T3(int length){
+    public static void T3(int length, boolean sampling){
         SimpleEntry<Double,List<Integer>> bench_results_list;
         SimpleEntry<Double,int[]> bench_results_array;
         SimpleEntry<Double,IntStream> bench_results_stream;
@@ -279,12 +295,18 @@ public class Benchmarks{
                 return Arrays.stream(random_ints_array).distinct();
             };
 
-        bench_results_list = testeBoxGen(rd_list);
-        System.out.println("[List]      Removed duplicated data in " + bench_results_list.getKey() + "s");
-        bench_results_array = testeBoxGen(rd_array);
-        System.out.println("[Array]     Removed duplicated data in " + bench_results_array.getKey() + "s");
-        bench_results_stream = testeBoxGen(rd_intstream_stream);
-        System.out.println("[IntStream] Removed duplicated data in " + bench_results_stream.getKey() + "s");
+        if(!sampling){
+            bench_results_list = testeBoxGen(rd_list);
+            System.out.println("[List]      Removed duplicated data in " + bench_results_list.getKey() + "s");
+            bench_results_array = testeBoxGen(rd_array);
+            System.out.println("[Array]     Removed duplicated data in " + bench_results_array.getKey() + "s");
+            bench_results_stream = testeBoxGen(rd_intstream_stream);
+            System.out.println("[IntStream] Removed duplicated data in " + bench_results_stream.getKey() + "s");
+        }else{
+            System.out.println("[List]      Removed duplicated data in " + sampler(rd_list) + "s");
+            System.out.println("[Array]     Removed duplicated data in " + sampler(rd_array) + "s");
+            System.out.println("[IntStream] Removed duplicated data in " + sampler(rd_intstream_stream) + "s");
+        }
     }
 
 //-------------------------------------------------------------------------------------------//
@@ -304,7 +326,7 @@ public class Benchmarks{
         return fobj.operation(a, b); 
     } 
 
-    public static void T4(List<TransCaixa> transactions){
+    public static void T4(List<TransCaixa> transactions, boolean sampling){
         SimpleEntry<Double, double[]> bench_results;
         
         BiFunction<Double, Double, Double> bi_multiplication = (x, y) -> {      
@@ -365,25 +387,34 @@ public class Benchmarks{
                          .toArray();
         };
 
-        bench_results = testeBoxGen(mult_method_stream);
-        System.out.println("[Static Method : Stream: Sequential] Calculated in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(mult_method_parallel);
-        System.out.println("[Static Method : Stream: Parallel]   Calculated in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(mult_bi_stream);
-        System.out.println("[BiFunction : Stream: Sequential]    Calculated in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(mult_bi_stream);
-        System.out.println("[BiFunction : Stream: Parallel]      Calculated in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(mult_lambda_stream);
-        System.out.println("[Lambda : Stream: Sequential]        Calculated in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(mult_lambda_parallel);
-        System.out.println("[Lambda : Stream: Parallel]          Calculated in " + bench_results.getKey() + "s");
+        if(!sampling){
+            bench_results = testeBoxGen(mult_method_stream);
+            System.out.println("[Static Method : Stream: Sequential] Calculated in " + bench_results.getKey() + "s");
+            bench_results = testeBoxGen(mult_method_parallel);
+            System.out.println("[Static Method : Stream: Parallel]   Calculated in " + bench_results.getKey() + "s");
+            bench_results = testeBoxGen(mult_bi_stream);
+            System.out.println("[BiFunction : Stream: Sequential]    Calculated in " + bench_results.getKey() + "s");
+            bench_results = testeBoxGen(mult_bi_parallel);
+            System.out.println("[BiFunction : Stream: Parallel]      Calculated in " + bench_results.getKey() + "s");
+            bench_results = testeBoxGen(mult_lambda_stream);
+            System.out.println("[Lambda : Stream: Sequential]        Calculated in " + bench_results.getKey() + "s");
+            bench_results = testeBoxGen(mult_lambda_parallel);
+            System.out.println("[Lambda : Stream: Parallel]          Calculated in " + bench_results.getKey() + "s");
+        }else{
+            System.out.println("[Static Method : Stream: Sequential] Calculated in " + sampler(mult_method_stream) + "s");
+            System.out.println("[Static Method : Stream: Parallel]   Calculated in " + sampler(mult_method_parallel) + "s");
+            System.out.println("[BiFunction : Stream: Sequential]    Calculated in " + sampler(mult_bi_stream) + "s");
+            System.out.println("[BiFunction : Stream: Parallel]      Calculated in " + sampler(mult_bi_parallel) + "s");
+            System.out.println("[Lambda : Stream: Sequential]        Calculated in " + sampler(mult_lambda_stream) + "s");
+            System.out.println("[Lambda : Stream: Parallel]          Calculated in " + sampler(mult_lambda_stream) + "s");
+        }
     }
 
 //-------------------------------------------------------------------------------------------//
 //                                           T5                                              //
 //-------------------------------------------------------------------------------------------//
 
-public static void T5(List<TransCaixa> transactions){
+public static void T5(List<TransCaixa> transactions, boolean sampling){
     SimpleEntry<Double, TreeSet<TransCaixa>> bench_results_tree;
     SimpleEntry<Double, List<TransCaixa>> bench_results_list;
 
@@ -432,14 +463,21 @@ public static void T5(List<TransCaixa> transactions){
             return listsorted;
         };
 
-    bench_results_tree = testeBoxGen(sort_treeset_stream);
-    System.out.println("[TreeSet: Stream : Sequential] Sorted in " + bench_results_tree.getKey() + "s");
-    bench_results_tree = testeBoxGen(sort_treeset_parallel);
-    System.out.println("[TreeSet: Stream : Parallel]   Sorted in " + bench_results_tree.getKey() + "s");
-    bench_results_list = testeBoxGen(sort_seq_stream);
-    System.out.println("[List: Stream : Sequential]    Sorted in " + bench_results_list.getKey() + "s");
-    bench_results_list = testeBoxGen(sort_seq_parallel);
-    System.out.println("[List: Stream : Parallel]      Sorted in " + bench_results_list.getKey() + "s");
+    if(!sampling){
+        bench_results_tree = testeBoxGen(sort_treeset_stream);
+        System.out.println("[TreeSet: Stream : Sequential] Sorted in " + bench_results_tree.getKey() + "s");
+        bench_results_tree = testeBoxGen(sort_treeset_parallel);
+        System.out.println("[TreeSet: Stream : Parallel]   Sorted in " + bench_results_tree.getKey() + "s");
+        bench_results_list = testeBoxGen(sort_seq_stream);
+        System.out.println("[List: Stream : Sequential]    Sorted in " + bench_results_list.getKey() + "s");
+        bench_results_list = testeBoxGen(sort_seq_parallel);
+        System.out.println("[List: Stream : Parallel]      Sorted in " + bench_results_list.getKey() + "s");
+    }else{
+        System.out.println("[TreeSet: Stream : Sequential] Sorted in " + sampler(sort_treeset_stream) + "s");
+        System.out.println("[TreeSet: Stream : Parallel]   Sorted in " + sampler(sort_treeset_parallel) + "s");
+        System.out.println("[List: Stream : Sequential]    Sorted in " + sampler(sort_seq_stream) + "s");
+        System.out.println("[List: Stream : Parallel]      Sorted in " + sampler(sort_seq_parallel) + "s");
+    }
 }
 
 //-------------------------------------------------------------------------------------------//
@@ -447,7 +485,7 @@ public static void T5(List<TransCaixa> transactions){
 // Group values according to month, day, hour                                                //
 //-------------------------------------------------------------------------------------------//
 
-public static void T6(List<TransCaixa> transactions){
+public static void T6(List<TransCaixa> transactions, boolean sampling){
     SimpleEntry<Double, Map<Integer,Map<Integer,Map<Integer, List<TransCaixa>>>>> bench_results;
 
     Supplier<Map<Integer,Map<Integer,Map<Integer, List<TransCaixa>>>>> stream_grouper = 
@@ -510,15 +548,21 @@ public static void T6(List<TransCaixa> transactions){
             }
             return res;
         };
-
-    bench_results = testeBoxGen(stream_grouper);
-    System.out.println("[Sequential Stream] Grouped in " + bench_results.getKey() + "s");
-    bench_results = testeBoxGen(parallel_stream_grouper);
-    System.out.println("[Parallel Stream]   Grouped in " + bench_results.getKey() + "s");
-    bench_results = testeBoxGen(iterator_grouper);
-    System.out.println("[Iterator]          Grouped in " + bench_results.getKey() + "s");
-    bench_results = testeBoxGen(forEach_grouper);
-    System.out.println("[forEach]           Grouped in " + bench_results.getKey() + "s");
+    if(!sampling){
+        bench_results = testeBoxGen(stream_grouper);
+        System.out.println("[Sequential Stream] Grouped in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(parallel_stream_grouper);
+        System.out.println("[Parallel Stream]   Grouped in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(iterator_grouper);
+        System.out.println("[Iterator]          Grouped in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(forEach_grouper);
+        System.out.println("[forEach]           Grouped in " + bench_results.getKey() + "s");
+    }else{
+        System.out.println("[Sequential Stream] Grouped in " + sampler(stream_grouper) + "s");
+        System.out.println("[Parallel Stream]   Grouped in " + sampler(parallel_stream_grouper) + "s");
+        System.out.println("[Iterator]          Grouped in " + sampler(iterator_grouper) + "s");
+        System.out.println("[forEach]           Grouped in " + sampler(forEach_grouper) + "s");
+    }
 }
 
     
@@ -526,7 +570,7 @@ public static void T6(List<TransCaixa> transactions){
 //                                           T7                                              //
 //-------------------------------------------------------------------------------------------//
 
-public static void T7(List<TransCaixa> transactions){
+public static void T7(List<TransCaixa> transactions, boolean sampling){
     SimpleEntry<Double, Double> bench_results;
 
     Spliterator<TransCaixa> spliterator1 = (new ArrayList<>(transactions)).spliterator();
@@ -585,16 +629,24 @@ public static void T7(List<TransCaixa> transactions){
             return sum_1 + sum_2 + sum_3 + sum_4;
         };
 
-    bench_results = testeBoxGen(list_sum_list);
-    System.out.println("[List]                      Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-    bench_results = testeBoxGen(list_sum_stream);
-    System.out.println("[Stream : Sequential]       Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-    bench_results = testeBoxGen(list_sum_parallel);
-    System.out.println("[Stream : Parallel]         Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-    bench_results = testeBoxGen(spliterator_sum_seq_stream);
-    System.out.println("[Spliterator : Seq Stream]  Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-    bench_results = testeBoxGen(spliterator_sum_parallel_stream);
-    System.out.println("[Spliterator : Par. Stream] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    if(!sampling){
+        bench_results = testeBoxGen(list_sum_list);
+        System.out.println("[List]                      Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(list_sum_stream);
+        System.out.println("[Stream : Sequential]       Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(list_sum_parallel);
+        System.out.println("[Stream : Parallel]         Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(spliterator_sum_seq_stream);
+        System.out.println("[Spliterator : Seq Stream]  Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(spliterator_sum_parallel_stream);
+        System.out.println("[Spliterator : Par. Stream] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    }else{
+        System.out.println("[List]                      Computed in " + sampler(list_sum_list) + "s");
+        System.out.println("[Stream : Sequential]       Computed in " + sampler(list_sum_stream) + "s");
+        System.out.println("[Stream : Parallel]         Computed in " + sampler(list_sum_parallel) + "s");
+        System.out.println("[Spliterator : Seq Stream]  Computed in " + sampler(spliterator_sum_seq_stream) + "s");
+        System.out.println("[Spliterator : Par. Stream] Computed in " + sampler(spliterator_sum_parallel_stream) + "s");
+    }
 }
 
 //-------------------------------------------------------------------------------------------//
@@ -602,7 +654,7 @@ public static void T7(List<TransCaixa> transactions){
 // Max value of a filtered Collection                                                        //
 //-------------------------------------------------------------------------------------------//
 
-public static void T8(List<TransCaixa> transactions){
+public static void T8(List<TransCaixa> transactions, boolean sampling){
     SimpleEntry<Double, String> bench_results;
 
     LocalDateTime ld1 = LocalDateTime.of(2017, 02, 20, 16, 0);
@@ -648,12 +700,18 @@ public static void T8(List<TransCaixa> transactions){
         return tr.get().getTrans();
     };
 
-    bench_results = testeBoxGen(java_7_biggest_tcode);
-    System.out.println("[Java 7]              Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-    bench_results = testeBoxGen(java_8_biggest_tcode);
-    System.out.println("[Stream : Sequential] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-    bench_results = testeBoxGen(java_8_biggest_tcode_parallel);
-    System.out.println("[Stream : Parallel]   Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    if(!sampling){
+        bench_results = testeBoxGen(java_7_biggest_tcode);
+        System.out.println("[Java 7]              Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(java_8_biggest_tcode);
+        System.out.println("[Stream : Sequential] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(java_8_biggest_tcode_parallel);
+        System.out.println("[Stream : Parallel]   Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    }else{
+        System.out.println("[Java 7]              Computed in " + sampler(java_7_biggest_tcode) + "s");
+        System.out.println("[Stream : Sequential] Computed in " + sampler(java_8_biggest_tcode) + "s");
+        System.out.println("[Stream : Parallel]   Computed in " + sampler(java_8_biggest_tcode_parallel) + "s");
+    }
 
 }
 
@@ -662,7 +720,7 @@ public static void T8(List<TransCaixa> transactions){
 // Sum of transactions made during a week period                                             //
 //-------------------------------------------------------------------------------------------//
 
-public static void T9(List<TransCaixa> transactions) {
+public static void T9(List<TransCaixa> transactions, boolean sampling) {
     SimpleEntry<Double,Double> faturado_bench_results;
     List<List<TransCaixa>> week_transactions = transactions.stream()
                                                            .collect(groupingBy(t->t.getData().toLocalDate().get(ChronoField.ALIGNED_WEEK_OF_YEAR)))
@@ -701,12 +759,18 @@ public static void T9(List<TransCaixa> transactions) {
             return week_sum;
         };
 
-    faturado_bench_results = testeBoxGen(stream_seq_faturado);
-    System.out.println("[Stream : Sequential] Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
-    faturado_bench_results = testeBoxGen(stream_parallel_faturado);
-    System.out.println("[Stream : Parallel]   Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
-    faturado_bench_results = testeBoxGen(java_7_faturado);
-    System.out.println("[forEach]             Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
+    if(!sampling){
+        faturado_bench_results = testeBoxGen(stream_seq_faturado);
+        System.out.println("[Stream : Sequential] Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
+        faturado_bench_results = testeBoxGen(stream_parallel_faturado);
+        System.out.println("[Stream : Parallel]   Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
+        faturado_bench_results = testeBoxGen(java_7_faturado);
+        System.out.println("[forEach]             Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
+    }else{
+        System.out.println("[Stream : Sequential] Computed in " + sampler(stream_seq_faturado) + "s");
+        System.out.println("[Stream : Parallel]   Computed in " + sampler(stream_parallel_faturado) + "s");
+        System.out.println("[forEach]             Computed in " + sampler(java_7_faturado) + "s");
+    }
 }
 
 //-------------------------------------------------------------------------------------------//
@@ -720,7 +784,7 @@ public static double get_iva(double valor){
     else return 0.23;
 }
 
-public static void T10(List<TransCaixa> transactions){
+public static void T10(List<TransCaixa> transactions, boolean sampling){
     SimpleEntry<Double, Map<Integer, Double>> bench_results;
 
     Supplier<Map<Integer, Double>> java_7_iva = 
@@ -763,18 +827,24 @@ public static void T10(List<TransCaixa> transactions){
                                                 })));
         };
 
-    bench_results = testeBoxGen(java_7_iva);
-    System.out.println("[forEach : Java7]     Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-    bench_results = testeBoxGen(stream_seq_iva);
-    System.out.println("[Stream : Sequential] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-    bench_results = testeBoxGen(stream_parallel_iva);
-    System.out.println("[Stream : Parallel]   Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    if(!sampling){
+        bench_results = testeBoxGen(java_7_iva);
+        System.out.println("[forEach : Java7]     Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(stream_seq_iva);
+        System.out.println("[Stream : Sequential] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+        bench_results = testeBoxGen(stream_parallel_iva);
+        System.out.println("[Stream : Parallel]   Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+    }else{
+        System.out.println("[forEach : Java7]     Computed in " + sampler(java_7_iva) + "s");
+        System.out.println("[Stream : Sequential] Computed in " + sampler(stream_seq_iva) + "s");
+        System.out.println("[Stream : Parallel]   Computed in " + sampler(stream_parallel_iva) + "s");
+    }
 
 }
 //-------------------------------------------------------------------------------------------//
 //                                           T12                                              //
 //-------------------------------------------------------------------------------------------//
-public static void T12(List<TransCaixa> transactions) {
+public static void T12(List<TransCaixa> transactions, boolean sampling) {
     SimpleEntry<Double, Map<String,Map<Integer,List<TransCaixa>>>> map_bench_results;
     SimpleEntry<Double, ConcurrentMap<String,ConcurrentMap<Integer,List<TransCaixa>>>> concmap_bench_results;
     
@@ -809,27 +879,57 @@ public static void T12(List<TransCaixa> transactions) {
                                 summingDouble(t->t.getValor())));
             };
 
-
-    map_bench_results = testeBoxGen(map);
-    System.out.println("[Map] Computed " + map_bench_results.getValue() + " in " + map_bench_results.getKey() + "s");
-    concmap_bench_results = testeBoxGen(concMap);
-    System.out.println("[Concurrent Map] Computed " + concmap_bench_results.getValue() + " in " + concmap_bench_results.getKey() + "s");
-    total_faturado_map = testeBoxGen(fat_map);
-    System.out.println("[Map] Computed " + total_faturado_map.getValue() + " in " + total_faturado_map.getKey() + "s");
-    total_faturado_conc = testeBoxGen(fat_conc_map);
-    System.out.println("[Concurrent Map] Computed " + total_faturado_conc.getValue() + " in " + total_faturado_conc.getKey() + "s");
+    
+    if(!sampling){
+        map_bench_results = testeBoxGen(map);
+        System.out.println("[Map] Computed " + map_bench_results.getValue() + " in " + map_bench_results.getKey() + "s");
+        concmap_bench_results = testeBoxGen(concMap);
+        System.out.println("[Concurrent Map] Computed " + concmap_bench_results.getValue() + " in " + concmap_bench_results.getKey() + "s");
+        total_faturado_map = testeBoxGen(fat_map);
+        System.out.println("[Map] Computed " + total_faturado_map.getValue() + " in " + total_faturado_map.getKey() + "s");
+        total_faturado_conc = testeBoxGen(fat_conc_map);
+        System.out.println("[Concurrent Map] Computed " + total_faturado_conc.getValue() + " in " + total_faturado_conc.getKey() + "s");
+    }else{
+        System.out.println("[Map] Computed in " +  sampler(map) + "s");
+        System.out.println("[Concurrent Map] Computed in " +  sampler(concMap) + "s");
+        System.out.println("[Map] Computed in " +  sampler(fat_map) + "s");
+        System.out.println("[Concurrent Map] Computed in " +  sampler(fat_conc_map) + "s");
+    }
 }
 
 //-------------------------------------------------------------------------------------------//
 //                                     TESTE_BOX_GEN                                         //
 //-------------------------------------------------------------------------------------------//
 
-    public static <R> SimpleEntry<Double,R> testeBoxGen(Supplier<? extends R> supplier) {
+    private static <R> SimpleEntry<Double,R> testeBoxGen(Supplier<? extends R> supplier) {
         for(int i = 0; i < 10; i ++) supplier.get();    //warmup caches
         System.gc();                                    //request garbage collector
         Crono.start();
         R resultado = supplier.get();
         Double tempo = Crono.stop();
         return new SimpleEntry<Double,R>(tempo, resultado);
+    }
+
+    private static <R> Double sampler(Supplier<? extends R> supplier) {
+        for(int i = 0; i < 10; i ++) supplier.get();    //warmup caches
+        System.gc();                                    //request garbage collector
+        Double tempo;
+        int pivot;
+        R resultado;
+        List<Double> samples = new ArrayList<>(); 
+        
+        for(int i = 0; i < 15; i ++){
+            System.gc();
+            Crono.start();
+            resultado = supplier.get();
+            tempo = Crono.stop();
+            samples.add(tempo);
+        }
+
+        pivot = samples.size() / 2;
+
+        if(samples.size() % 2 == 0)
+            return samples.get(pivot);
+        else return (samples.get(pivot) + samples.get(pivot+1))/2;
     }
 }
