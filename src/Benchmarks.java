@@ -372,36 +372,28 @@ public static void T5(List<TransCaixa> transactions, boolean sampling){
 
     Supplier<TreeSet<TransCaixa>> sort_treeset_stream = 
         () -> {
-            TreeSet<TransCaixa> treesorted = new TreeSet<>(byValor);
-            transactions.stream()
-                        .map(t -> treesorted.add(t));
-            return treesorted;   
+            return transactions.stream()
+                               .collect(Collectors.toCollection(() -> new TreeSet<>(byValor)));
         };
 
     Supplier<TreeSet<TransCaixa>> sort_treeset_parallel = 
         () -> {
-            TreeSet<TransCaixa> treesorted = new TreeSet<>(byValor);
-            transactions.parallelStream()
-                        .map(t -> treesorted.add(t));
-            return treesorted;   
+            return transactions.parallelStream()
+                               .collect(Collectors.toCollection(() -> new TreeSet<>(byValor)));
         };
 
     Supplier<List<TransCaixa>> sort_seq_stream = 
         () -> {
-            List<TransCaixa> listsorted = new ArrayList<>();
-            transactions.stream()
-                        .sorted(byValor)
-                        .map(t -> listsorted.add(t));
-            return listsorted;
+            return transactions.stream()
+                                .sorted(byValor)
+                                .collect(Collectors.toList());;
         };
 
     Supplier<List<TransCaixa>> sort_seq_parallel = 
         () -> {
-            List<TransCaixa> listsorted = new ArrayList<>();
-            transactions.parallelStream()
+            return transactions.parallelStream()
                         .sorted(byValor)
-                        .map(t -> listsorted.add(t));
-            return listsorted;
+                        .collect(Collectors.toList());
         };
 
     if(!sampling){
@@ -786,6 +778,14 @@ public static void T10(List<TransCaixa> transactions, boolean sampling){
     }
 
 }
+
+//-------------------------------------------------------------------------------------------//
+//                                           T11                                             //
+//-------------------------------------------------------------------------------------------//
+public static void T11(List<TransCaixa> transactions, boolean sampling) {
+    T2(transactions, sampling);
+}
+
 //-------------------------------------------------------------------------------------------//
 //                                           T12                                              //
 //-------------------------------------------------------------------------------------------//
@@ -805,7 +805,7 @@ public static void T12(List<TransCaixa> transactions, boolean sampling) {
 
     Supplier<ConcurrentMap<String,ConcurrentMap<Integer,List<TransCaixa>>>> concMap =
             () -> {
-                return transactions.stream()
+                return transactions.parallelStream()
                                    .collect(groupingByConcurrent(t->t.getCaixa(),
                                                                  groupingByConcurrent(t->t.getData().getMonthValue())));
             };
@@ -819,7 +819,7 @@ public static void T12(List<TransCaixa> transactions, boolean sampling) {
 
     Supplier<ConcurrentMap<String,Double>> fat_conc_map =
             () -> {
-                return transactions.stream()
+                return transactions.parallelStream()
                         .collect(groupingByConcurrent(t->t.getCaixa(),
                                 summingDouble(t->t.getValor())));
             };
