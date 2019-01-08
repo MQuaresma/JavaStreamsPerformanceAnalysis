@@ -442,7 +442,7 @@ public static void T5(List<TransCaixa> transactions, boolean sampling){
         () -> {
             return transactions.stream()
                                 .sorted(byValor)
-                                .collect(Collectors.toList());;
+                                .collect(Collectors.toList());
         };
 
     Supplier<List<TransCaixa>> sort_seq_parallel = 
@@ -678,7 +678,8 @@ public static void T8(List<TransCaixa> transactions, boolean sampling){
         Optional<TransCaixa> tr = transactions.stream()  
                     .filter(t -> t.getData().isAfter(ld1) && t.getData().isBefore(ld2))
                     .max(byValor);
-        return tr.get().getTrans();
+        if (tr.isPresent()) return tr.get().getTrans();
+        else return "";
     };
 
     Supplier<String> java_8_biggest_tcode_parallel = 
@@ -686,7 +687,8 @@ public static void T8(List<TransCaixa> transactions, boolean sampling){
         Optional<TransCaixa> tr = transactions.parallelStream()  
                     .filter(t -> t.getData().isAfter(ld1) && t.getData().isBefore(ld2))
                     .max(byValor);
-        return tr.get().getTrans();
+        if (tr.isPresent()) return tr.get().getTrans();
+        else return "";
     };
 
     if(!sampling){
@@ -839,7 +841,7 @@ public static void T10(List<TransCaixa> transactions, boolean sampling){
 //                                           T11                                             //
 //-------------------------------------------------------------------------------------------//
 public static void T11(List<TransCaixa> transactions, boolean sampling) {
-    T2(transactions, sampling);
+    T4(transactions, sampling);
 }
 
 //-------------------------------------------------------------------------------------------//
@@ -925,6 +927,8 @@ public static void T12(List<TransCaixa> transactions, boolean sampling) {
             tempo = Crono.stop();
             samples.add(tempo);
         }
+
+        Collections.sort(samples);
 
         pivot = samples.size() / 2;
 

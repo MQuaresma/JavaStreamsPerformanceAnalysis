@@ -81,7 +81,7 @@ public class Trans_Caixa_Streams {
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         //REMOVE WHEN COMMITING
         String path_prefix = "";
-        List<String> test_files = Arrays.asList("transCaixa1M.txt", "transCaixa2M.txt", "transCaixa4M.txt", "transCaixa6M.txt", "transCaixa8M.txt");
+        List<String> test_files = Arrays.asList("transCaixa1M.txt","transCaixa2M.txt","transCaixa4M.txt","transCaixa6M.txt");
         List<TransCaixa> transaction_list = new ArrayList<>();
 
         for(String file : test_files){
@@ -107,6 +107,8 @@ public class Trans_Caixa_Streams {
             Benchmarks.T9(transaction_list, true);
             System.out.println("\nT10\n");
             Benchmarks.T10(transaction_list, true);
+            System.out.println("\nT11\n");
+            Benchmarks.T11(transaction_list, true);
             System.out.println("\nT12\n");
             Benchmarks.T12(transaction_list, true);
             System.gc();
