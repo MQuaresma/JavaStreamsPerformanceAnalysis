@@ -81,25 +81,35 @@ public class Trans_Caixa_Streams {
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         //REMOVE WHEN COMMITING
         String path_prefix = "";
-        List<String> test_files = Arrays.asList("transCaixa1M.txt", "transCaixa2M.txt", "transCaixa4M.txt", "transCaixa6M.txt");
+        List<String> test_files = Arrays.asList("transCaixa1M.txt", "transCaixa2M.txt", "transCaixa4M.txt", "transCaixa6M.txt", "transCaixa8M.txt");
         List<TransCaixa> transaction_list = new ArrayList<>();
 
-        for(String file: test_files){
+        for(String file : test_files){
             transaction_list = setup(path_prefix+file);
-            out.println(file);
+            System.out.println("\n\n" + file + "\n\n");
+            System.out.println("\nT1\n");
             Benchmarks.T1(transaction_list, true);
-            /*
-            Benchmarks.T2(transaction_list);
-            Benchmarks.T3(100000);
-            Benchmarks.T4(transaction_list);
-            Benchmarks.T5(transaction_list);
-            Benchmarks.T6(transaction_list);
-            Benchmarks.T7(transaction_list);
-            Benchmarks.T8(transaction_list);
-            Benchmarks.T9(transaction_list);
-            Benchmarks.T10(transaction_list);
-            Benchmarks.T12(transaction_list);
-            */
+            System.out.println("\nT2\n");
+            Benchmarks.T2(transaction_list, true);
+            System.out.println("\nT3\n");
+            Benchmarks.T3(transaction_list.size(), true);
+            System.out.println("\nT4\n");
+            Benchmarks.T4(transaction_list, true);
+            System.out.println("\nT5\n");
+            Benchmarks.T5(transaction_list, true);
+            System.out.println("\nT6\n");
+            Benchmarks.T6(transaction_list, true);
+            System.out.println("\nT7\n");
+            Benchmarks.T7(transaction_list, true);
+            System.out.println("\nT8\n");
+            Benchmarks.T8(transaction_list, true);
+            System.out.println("\nT9\n");
+            Benchmarks.T9(transaction_list, true);
+            System.out.println("\nT10\n");
+            Benchmarks.T10(transaction_list, true);
+            System.out.println("\nT12\n");
+            Benchmarks.T12(transaction_list, true);
+            System.gc();
         }
     }
 }

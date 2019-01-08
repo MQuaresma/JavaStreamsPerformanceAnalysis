@@ -16,6 +16,7 @@ import java.util.function.IntSupplier;
 import java.util.Random;
 import java.util.Arrays;
 import java.util.stream.IntStream;
+import java.util.function.Function;
 import java.util.function.BiFunction;
 import java.time.*;
 import java.util.*;
@@ -94,7 +95,7 @@ public class Benchmarks{
             bench_results = testeBoxGen(Dstream_seq_supplier);
             System.out.println("[DoubleStream:Sequential] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
             bench_results = testeBoxGen(stream_seq_supplier);
-            System.out.println("[Stream:]                 Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
+            System.out.println("[Stream:Sequential]       Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
             bench_results = testeBoxGen(Dstream_parallel_supplier);
             System.out.println("[DoubleStream:Parallel]   Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
             bench_results = testeBoxGen(stream_parallel_supplier);
@@ -103,7 +104,7 @@ public class Benchmarks{
             System.out.println("[Array:forEach]           Computed  in " + sampler(array_forEach_supplier) + "s");
             System.out.println("[Array:for]               Computed  in " + sampler(array_for_supplier) + "s");
             System.out.println("[DoubleStream:Sequential] Computed  in " + sampler(Dstream_seq_supplier) + "s");
-            System.out.println("[Stream:]                 Computed  in " + sampler(stream_seq_supplier) + "s");
+            System.out.println("[Stream:Sequential]       Computed  in " + sampler(stream_seq_supplier) + "s");
             System.out.println("[DoubleStream:Parallel]   Computed  in " + sampler(Dstream_parallel_supplier) + "s");
             System.out.println("[Stream:Parallel]         Computed  in " + sampler(stream_parallel_supplier) + "s");
         }
@@ -199,56 +200,6 @@ public class Benchmarks{
             System.out.println("[List - Sequential Stream]    Sorted in " + sampler(sort_list_seq_stream) + "s");
             System.out.println("[List - Parallel Stream]      Sorted in " + sampler(sort_list_parallel_stream) + "s");
         }
-            
-        /*
-        Supplier<Set<TransCaixa>> sort_treeset = 
-            () -> {
-                TreeSet<TransCaixa> treesorted = new TreeSet<>(byDate);
-                treesorted.addAll(transactions);
-                return treesorted;   
-            };
-
-        Supplier<List<TransCaixa>> sort_inplace = 
-            () -> {
-                List<TransCaixa> sorted = new ArrayList<>();
-                sorted.addAll(transactions);
-                sorted.sort(byDate);
-                return sorted;
-            };
-
-        Supplier<List<TransCaixa>> sort_seq_stream_30inicial =
-            () -> {
-                return transactions.stream().sorted(byDate).limit((long) (transactions.size()* 0.3)).collect(Collectors.toList());
-            };
-
-        Supplier<List<TransCaixa>> sort_parallel_stream_30inicial =
-            () -> {
-                return transactions.parallelStream().sorted(byDate).limit((long) (transactions.size()* 0.3)).collect(Collectors.toList());
-            };
-
-        Supplier<List<TransCaixa>> sort_seq_stream_30final =
-            () -> {
-                return transactions.stream().sorted(byDate).skip((long) (transactions.size()* 0.7)).collect(Collectors.toList());
-            };
-
-        Supplier<List<TransCaixa>> sort_parallel_stream_30final =
-            () -> {
-                return transactions.parallelStream().sorted(byDate).skip((long) (transactions.size()* 0.7)).collect(Collectors.toList());
-            };
-
-        bench_results = testeBoxGen(sort_treeset);
-        System.out.println("[TreeSet] Sorted in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(sort_inplace);
-        System.out.println("[List] Sorted in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(sort_seq_stream_30inicial);
-        System.out.println("[Stream:Sequential] First 30% Sorted in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(sort_parallel_stream_30inicial);
-        System.out.println("[Stream:Parallel] First 30% Sorted in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(sort_seq_stream_30final);
-        System.out.println("[Stream:Sequential] Last 30% Sorted in " + bench_results.getKey() + "s");
-        bench_results = testeBoxGen(sort_parallel_stream_30final);
-        System.out.println("[Stream:Parallel] Last 30% Sorted in " + bench_results.getKey() + "s");
-        */
     }
 
 //-------------------------------------------------------------------------------------------//
@@ -260,7 +211,6 @@ public class Benchmarks{
     public static void T3(int length, boolean sampling){
         SimpleEntry<Double,List<Integer>> bench_results_list;
         SimpleEntry<Double,int[]> bench_results_array;
-        SimpleEntry<Double,IntStream> bench_results_stream;
         Random int_generator = new Random();
 
         int[] random_ints_array = int_generator.ints(length, 1, 9999).toArray();
@@ -290,9 +240,9 @@ public class Benchmarks{
                 return result;
             };
 
-        Supplier<IntStream> rd_intstream_stream =
+        Supplier<List<Integer>> rd_intstream_stream =
             () -> {
-                return Arrays.stream(random_ints_array).distinct();
+                return Arrays.stream(random_ints_array).distinct().boxed().collect(Collectors.toList());
             };
 
         if(!sampling){
@@ -300,8 +250,8 @@ public class Benchmarks{
             System.out.println("[List]      Removed duplicated data in " + bench_results_list.getKey() + "s");
             bench_results_array = testeBoxGen(rd_array);
             System.out.println("[Array]     Removed duplicated data in " + bench_results_array.getKey() + "s");
-            bench_results_stream = testeBoxGen(rd_intstream_stream);
-            System.out.println("[IntStream] Removed duplicated data in " + bench_results_stream.getKey() + "s");
+            bench_results_list = testeBoxGen(rd_intstream_stream);
+            System.out.println("[IntStream] Removed duplicated data in " + bench_results_list.getKey() + "s");
         }else{
             System.out.println("[List]      Removed duplicated data in " + sampler(rd_list) + "s");
             System.out.println("[Array]     Removed duplicated data in " + sampler(rd_array) + "s");
@@ -318,14 +268,6 @@ public class Benchmarks{
         return number_1 * number_2;
     }
 
-    interface LambdaFunc{ 
-        double operation(double a, double b); 
-    }
-
-    private double operate(double a, double b, LambdaFunc fobj){ 
-        return fobj.operation(a, b); 
-    } 
-
     public static void T4(List<TransCaixa> transactions, boolean sampling){
         SimpleEntry<Double, double[]> bench_results;
         
@@ -333,14 +275,12 @@ public class Benchmarks{
             return x * y;
         };
 
-        LambdaFunc lambda_multiplication = (double x, double y) -> x * y;
+        Function<Double, Function<Double,Double>> lambda_mul = x -> y -> x * y;
 
         double[] transactions_array = transactions
                                             .stream()
                                             .mapToDouble(TransCaixa::getValor)
                                             .toArray();
-
-        Benchmarks b = new Benchmarks();
 
         Supplier<double[]> mult_method_stream =
         () -> {
@@ -375,7 +315,7 @@ public class Benchmarks{
         Supplier<double[]> mult_lambda_stream =
         () -> {
             return Arrays.stream(transactions_array)
-                         .map(t -> b.operate(t,t,lambda_multiplication))
+                         .map(t -> lambda_mul.apply(t).apply(t))
                          .toArray();
         };
 
@@ -383,7 +323,7 @@ public class Benchmarks{
         () -> {
             return Arrays.stream(transactions_array)
                          .parallel()
-                         .map(t -> b.operate(t,t,lambda_multiplication))
+                         .map(t -> lambda_mul.apply(t).apply(t))
                          .toArray();
         };
 
@@ -406,12 +346,13 @@ public class Benchmarks{
             System.out.println("[BiFunction : Stream: Sequential]    Calculated in " + sampler(mult_bi_stream) + "s");
             System.out.println("[BiFunction : Stream: Parallel]      Calculated in " + sampler(mult_bi_parallel) + "s");
             System.out.println("[Lambda : Stream: Sequential]        Calculated in " + sampler(mult_lambda_stream) + "s");
-            System.out.println("[Lambda : Stream: Parallel]          Calculated in " + sampler(mult_lambda_stream) + "s");
+            System.out.println("[Lambda : Stream: Parallel]          Calculated in " + sampler(mult_lambda_parallel) + "s");
         }
     }
 
 //-------------------------------------------------------------------------------------------//
 //                                           T5                                              //
+// Sort according to Comparator                                                              //
 //-------------------------------------------------------------------------------------------//
 
 public static void T5(List<TransCaixa> transactions, boolean sampling){
@@ -548,6 +489,7 @@ public static void T6(List<TransCaixa> transactions, boolean sampling){
             }
             return res;
         };
+    
     if(!sampling){
         bench_results = testeBoxGen(stream_grouper);
         System.out.println("[Sequential Stream] Grouped in " + bench_results.getKey() + "s");
@@ -572,11 +514,6 @@ public static void T6(List<TransCaixa> transactions, boolean sampling){
 
 public static void T7(List<TransCaixa> transactions, boolean sampling){
     SimpleEntry<Double, Double> bench_results;
-
-    Spliterator<TransCaixa> spliterator1 = (new ArrayList<>(transactions)).spliterator();
-    Spliterator<TransCaixa> spliterator2 = spliterator1.trySplit();
-    Spliterator<TransCaixa> spliterator3 = spliterator2.trySplit();
-    Spliterator<TransCaixa> spliterator4 = spliterator1.trySplit();
 
     Supplier<Double> list_sum_list = 
         () -> {
@@ -603,29 +540,33 @@ public static void T7(List<TransCaixa> transactions, boolean sampling){
     /*Supplier<Double> spliterator_sum_foreach =
         () -> {
             double sum = 0;
-            for (TransCaixa t : spliterator1){
-                sum += t.getValor();
-            }
+            spliterator1.forEachRemaining(reduce(0,(ac, t) -> ac + t.getValor()));
             return sum;
         };*/
 
     Supplier<Double> spliterator_sum_seq_stream =
         () -> {
-            // isto funciona
-            // StreamSupport.stream(spliterator1, false).mapToDouble(TransCaixa::getValor).forEach(System.out::println);
-            double sum_1 = StreamSupport.stream(spliterator1, false).mapToDouble(TransCaixa::getValor).sum();
-            double sum_2 = StreamSupport.stream(spliterator2, false).mapToDouble(TransCaixa::getValor).sum();
-            double sum_3 = StreamSupport.stream(spliterator3, false).mapToDouble(TransCaixa::getValor).sum();
-            double sum_4 = StreamSupport.stream(spliterator4, false).mapToDouble(TransCaixa::getValor).sum();
+            Spliterator<TransCaixa> split = (new ArrayList<>(transactions)).spliterator();
+            Spliterator<TransCaixa> split2 = split.trySplit();
+            Spliterator<TransCaixa> split3 = split.trySplit();
+            Spliterator<TransCaixa> split4 = split2.trySplit();
+            double sum_1 = StreamSupport.stream(split, false).mapToDouble(TransCaixa::getValor).sum();
+            double sum_2 = StreamSupport.stream(split2, false).mapToDouble(TransCaixa::getValor).sum();
+            double sum_3 = StreamSupport.stream(split3, false).mapToDouble(TransCaixa::getValor).sum();
+            double sum_4 = StreamSupport.stream(split4, false).mapToDouble(TransCaixa::getValor).sum();
             return sum_1 + sum_2 + sum_3 + sum_4;
         };
     
     Supplier<Double> spliterator_sum_parallel_stream =
         () -> {
-            double sum_1 = StreamSupport.stream(spliterator1, true).mapToDouble(TransCaixa::getValor).sum();
-            double sum_2 = StreamSupport.stream(spliterator2, true).mapToDouble(TransCaixa::getValor).sum();
-            double sum_3 = StreamSupport.stream(spliterator3, true).mapToDouble(TransCaixa::getValor).sum();
-            double sum_4 = StreamSupport.stream(spliterator4, true).mapToDouble(TransCaixa::getValor).sum();
+            Spliterator<TransCaixa> split = (new ArrayList<>(transactions)).spliterator();
+            Spliterator<TransCaixa> split2 = split.trySplit();
+            Spliterator<TransCaixa> split3 = split.trySplit();
+            Spliterator<TransCaixa> split4 = split2.trySplit();
+            double sum_1 = StreamSupport.stream(split, true).mapToDouble(TransCaixa::getValor).sum();
+            double sum_2 = StreamSupport.stream(split2, true).mapToDouble(TransCaixa::getValor).sum();
+            double sum_3 = StreamSupport.stream(split3, true).mapToDouble(TransCaixa::getValor).sum();
+            double sum_4 = StreamSupport.stream(split4, true).mapToDouble(TransCaixa::getValor).sum();
             return sum_1 + sum_2 + sum_3 + sum_4;
         };
 
@@ -721,51 +662,55 @@ public static void T8(List<TransCaixa> transactions, boolean sampling){
 //-------------------------------------------------------------------------------------------//
 
 public static void T9(List<TransCaixa> transactions, boolean sampling) {
-    SimpleEntry<Double,Double> faturado_bench_results;
+    SimpleEntry<Double,List<Double>> faturado_bench_results;
     List<List<TransCaixa>> week_transactions = transactions.stream()
                                                            .collect(groupingBy(t->t.getData().toLocalDate().get(ChronoField.ALIGNED_WEEK_OF_YEAR)))
                                                            .values()
                                                            .stream()
                                                            .collect(toList());
 
-    Supplier<Double> stream_seq_faturado =
+    Supplier<List<Double>> stream_seq_faturado =
         () -> {
             return week_transactions.stream()
                                     .mapToDouble(listasemana-> listasemana.stream()
                                                                     .mapToDouble(t->t.getValor())
                                                                     .sum())
-                                    .sum();
+                                    .boxed()
+                                    .collect(Collectors.toList());
         };
     
-    Supplier<Double> stream_parallel_faturado =
+    Supplier<List<Double>> stream_parallel_faturado =
         () -> {
             return week_transactions.stream()
                                     .parallel()
                                     .mapToDouble(listasemana-> listasemana.stream()
                                                                     .mapToDouble(t->t.getValor())
                                                                     .sum())
-                                    .sum();
+                                    .boxed()
+                                    .collect(Collectors.toList());
         };
     
-    Supplier<Double> java_7_faturado =
+    Supplier<List<Double>> java_7_faturado =
         () -> {
             double week_sum = 0.f;
+            List<Double> semana_faturado = new ArrayList<>();
 
             for (List<TransCaixa> semana:week_transactions) {
+                week_sum = 0.f;
                 for (TransCaixa t : semana)
                     week_sum += t.getValor();
-
+                semana_faturado.add(week_sum);
             }
-            return week_sum;
+            return semana_faturado;
         };
 
     if(!sampling){
         faturado_bench_results = testeBoxGen(stream_seq_faturado);
-        System.out.println("[Stream : Sequential] Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
+        System.out.println("[Stream : Sequential] Computed in " + faturado_bench_results.getKey() + "s");
         faturado_bench_results = testeBoxGen(stream_parallel_faturado);
-        System.out.println("[Stream : Parallel]   Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
+        System.out.println("[Stream : Parallel]   Computed in " + faturado_bench_results.getKey() + "s");
         faturado_bench_results = testeBoxGen(java_7_faturado);
-        System.out.println("[forEach]             Computed " + faturado_bench_results.getValue() + " in " + faturado_bench_results.getKey() + "s");
+        System.out.println("[forEach]             Computed in " + faturado_bench_results.getKey() + "s");
     }else{
         System.out.println("[Stream : Sequential] Computed in " + sampler(stream_seq_faturado) + "s");
         System.out.println("[Stream : Parallel]   Computed in " + sampler(stream_parallel_faturado) + "s");
@@ -882,13 +827,13 @@ public static void T12(List<TransCaixa> transactions, boolean sampling) {
     
     if(!sampling){
         map_bench_results = testeBoxGen(map);
-        System.out.println("[Map] Computed " + map_bench_results.getValue() + " in " + map_bench_results.getKey() + "s");
+        System.out.println("[Map] Computed in " + map_bench_results.getKey() + "s");
         concmap_bench_results = testeBoxGen(concMap);
-        System.out.println("[Concurrent Map] Computed " + concmap_bench_results.getValue() + " in " + concmap_bench_results.getKey() + "s");
+        System.out.println("[Concurrent Map] Computed in " + concmap_bench_results.getKey() + "s");
         total_faturado_map = testeBoxGen(fat_map);
-        System.out.println("[Map] Computed " + total_faturado_map.getValue() + " in " + total_faturado_map.getKey() + "s");
+        System.out.println("[Map] Computed in " + total_faturado_map.getKey() + "s");
         total_faturado_conc = testeBoxGen(fat_conc_map);
-        System.out.println("[Concurrent Map] Computed " + total_faturado_conc.getValue() + " in " + total_faturado_conc.getKey() + "s");
+        System.out.println("[Concurrent Map] Computed in " + total_faturado_conc.getKey() + "s");
     }else{
         System.out.println("[Map] Computed in " +  sampler(map) + "s");
         System.out.println("[Concurrent Map] Computed in " +  sampler(concMap) + "s");
@@ -919,7 +864,6 @@ public static void T12(List<TransCaixa> transactions, boolean sampling) {
         List<Double> samples = new ArrayList<>(); 
         
         for(int i = 0; i < 15; i ++){
-            System.gc();
             Crono.start();
             resultado = supplier.get();
             tempo = Crono.stop();

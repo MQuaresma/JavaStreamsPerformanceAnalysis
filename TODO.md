@@ -2,12 +2,12 @@
 
 ## Benchmarks
 - [x] T1
-- [ ] T2
+- [x] T2
 - [x] T3
 - [x] T4
 - [x] T5
 - [x] T6
-- [ ] T7 (validate)
+- [x] T7
 - [x] T8
 - [x] T9
 - [x] T10
