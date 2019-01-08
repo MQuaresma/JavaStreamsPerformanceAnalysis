@@ -39,7 +39,7 @@ public class Benchmarks{
                                             .mapToDouble(TransCaixa::getValor)
                                             .toArray();
 
-        Supplier<Double> array_for_supplier = 
+        Supplier<Double> array_for_supplier_sum= 
             () -> {
                 double sum = 0.f;
                 for(int i = 0; i < transactions_array.length; i++)
@@ -47,7 +47,7 @@ public class Benchmarks{
                 return sum;
             };
 
-        Supplier<Double> array_forEach_supplier = 
+        Supplier<Double> array_forEach_supplier_sum= 
             () -> {
                 double sum = 0.f;
                 for(Double value : transactions_array)
@@ -55,7 +55,7 @@ public class Benchmarks{
                 return sum;
             };
 
-        Supplier<Double> Dstream_seq_supplier =
+        Supplier<Double> Dstream_seq_supplier_sum=
             () -> {
                 return transactions
                             .stream()
@@ -63,7 +63,7 @@ public class Benchmarks{
                             .sum();
             };
         
-        Supplier<Double> Dstream_parallel_supplier =
+        Supplier<Double> Dstream_parallel_supplier_sum=
             () -> {
                 return transactions
                             .parallelStream()
@@ -71,7 +71,7 @@ public class Benchmarks{
                             .sum();
             };
 
-        Supplier<Double> stream_seq_supplier =
+        Supplier<Double> stream_seq_supplier_sum=
             () -> {
                 return transactions
                             .stream()
@@ -79,34 +79,90 @@ public class Benchmarks{
                             .reduce(0.0, (ac, n) -> ac + n);
             };
 
-        Supplier<Double> stream_parallel_supplier =
+        Supplier<Double> stream_parallel_supplier_sum=
             () -> {
                 return transactions
                             .parallelStream()
                             .map(TransCaixa::getValor)
                             .reduce(0.0, (ac, n) -> ac + n);
+            };
+        
+            Supplier<Double> array_for_supplier_avg= 
+            () -> {
+                double sum = 0.f;
+                for(int i = 0; i < transactions_array.length; i++)
+                    sum += transactions_array[i];
+                return sum/transactions_array.length;
+            };
+
+        Supplier<Double> array_forEach_supplier_avg= 
+            () -> {
+                double sum = 0.f;
+                for(Double value : transactions_array)
+                    sum += value;
+                return sum/transactions_array.length;
+            };
+
+        Supplier<Double> Dstream_seq_supplier_avg=
+            () -> {
+                return transactions
+                            .stream()
+                            .mapToDouble(TransCaixa::getValor)
+                            .average().getAsDouble();
+            };
+        
+        Supplier<Double> Dstream_parallel_supplier_avg=
+            () -> {
+                return transactions
+                            .parallelStream()
+                            .mapToDouble(TransCaixa::getValor)
+                            .average().getAsDouble();
+            };
+
+        Supplier<Double> stream_seq_supplier_avg=
+            () -> {
+                return transactions
+                            .stream()
+                            .map(TransCaixa::getValor)
+                            .collect(Collectors.averagingDouble(Double::new));
+            };
+
+        Supplier<Double> stream_parallel_supplier_avg=
+            () -> {
+                return transactions
+                            .parallelStream()
+                            .map(TransCaixa::getValor)
+                            .collect(Collectors.averagingDouble(Double::new));
             };
         
         if(!sampling){
-            bench_results = testeBoxGen(array_forEach_supplier);
+            bench_results = testeBoxGen(array_forEach_supplier_sum);
             System.out.println("[Array:forEach]           Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-            bench_results = testeBoxGen(array_for_supplier);
+            bench_results = testeBoxGen(array_for_supplier_sum);
             System.out.println("[Array:for]               Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-            bench_results = testeBoxGen(Dstream_seq_supplier);
+            bench_results = testeBoxGen(Dstream_seq_supplier_sum);
             System.out.println("[DoubleStream:Sequential] Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-            bench_results = testeBoxGen(stream_seq_supplier);
+            bench_results = testeBoxGen(stream_seq_supplier_sum);
             System.out.println("[Stream:Sequential]       Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-            bench_results = testeBoxGen(Dstream_parallel_supplier);
+            bench_results = testeBoxGen(Dstream_parallel_supplier_sum);
             System.out.println("[DoubleStream:Parallel]   Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
-            bench_results = testeBoxGen(stream_parallel_supplier);
+            bench_results = testeBoxGen(stream_parallel_supplier_sum);
             System.out.println("[Stream:Parallel]         Computed " + bench_results.getValue() + " in " + bench_results.getKey() + "s");
         }else{
-            System.out.println("[Array:forEach]           Computed  in " + sampler(array_forEach_supplier) + "s");
-            System.out.println("[Array:for]               Computed  in " + sampler(array_for_supplier) + "s");
-            System.out.println("[DoubleStream:Sequential] Computed  in " + sampler(Dstream_seq_supplier) + "s");
-            System.out.println("[Stream:Sequential]       Computed  in " + sampler(stream_seq_supplier) + "s");
-            System.out.println("[DoubleStream:Parallel]   Computed  in " + sampler(Dstream_parallel_supplier) + "s");
-            System.out.println("[Stream:Parallel]         Computed  in " + sampler(stream_parallel_supplier) + "s");
+            /*
+            System.out.println("[Array:forEach]           Computed  in " + sampler(array_forEach_supplier_sum) + "s");
+            System.out.println("[Array:for]               Computed  in " + sampler(array_for_supplier_sum) + "s");
+            System.out.println("[DoubleStream:Sequential] Computed  in " + sampler(Dstream_seq_supplier_sum) + "s");
+            System.out.println("[Stream:Sequential]       Computed  in " + sampler(stream_seq_supplier_sum) + "s");
+            System.out.println("[DoubleStream:Parallel]   Computed  in " + sampler(Dstream_parallel_supplier_sum) + "s");
+            System.out.println("[Stream:Parallel]         Computed  in " + sampler(stream_parallel_supplier_sum) + "s");
+            */
+            System.out.println("[Array:forEach]           Computed  in " + sampler(array_forEach_supplier_avg) + "s");
+            System.out.println("[Array:for]               Computed  in " + sampler(array_for_supplier_avg) + "s");
+            System.out.println("[DoubleStream:Sequential] Computed  in " + sampler(Dstream_seq_supplier_avg) + "s");
+            System.out.println("[Stream:Sequential]       Computed  in " + sampler(stream_seq_supplier_avg) + "s");
+            System.out.println("[DoubleStream:Parallel]   Computed  in " + sampler(Dstream_parallel_supplier_avg) + "s");
+            System.out.println("[Stream:Parallel]         Computed  in " + sampler(stream_parallel_supplier_avg) + "s");
         }
     }
 
